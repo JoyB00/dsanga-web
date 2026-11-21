@@ -27,6 +27,18 @@ export const getExperience = cache(async (key: string, locale: Locale) => {
   return docs[0] ?? null
 })
 
+export const getMenuItems = cache(async (locale: Locale) => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'menu-items',
+    ...base(locale),
+    where: { available: { equals: true } },
+    sort: 'order',
+    limit: 200,
+  })
+  return docs
+})
+
 export const getFaqs = cache(async (locale: Locale, topics?: Faq['topic'][]) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({

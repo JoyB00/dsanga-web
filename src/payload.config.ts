@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { AuditLogs } from './collections/AuditLogs'
+import { Documents } from './collections/Documents'
 import { Events } from './collections/Events'
 import { Experiences } from './collections/Experiences'
 import { Faqs } from './collections/Faqs'
@@ -41,7 +42,7 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: false,
   },
-  collections: [Experiences, MenuItems, Events, Offers, VenuePackages, Faqs, Media, Inquiries, Users, AuditLogs],
+  collections: [Experiences, MenuItems, Events, Offers, VenuePackages, Faqs, Media, Documents, Inquiries, Users, AuditLogs],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

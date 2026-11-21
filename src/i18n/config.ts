@@ -5,6 +5,12 @@ export const defaultLocale: Locale = 'en'
 export const isLocale = (value: string | undefined): value is Locale =>
   Boolean(value && (locales as readonly string[]).includes(value))
 
+/** Resolve the [locale] route param (falls back to English). */
+export const localeFromParams = async (params: Promise<{ locale: string }>): Promise<Locale> => {
+  const { locale } = await params
+  return isLocale(locale) ? locale : defaultLocale
+}
+
 /**
  * Public URL slugs per language (spec §3.1). The app folders use the English slug;
  * src/proxy.ts maps /id/<indonesian-slug> onto them.

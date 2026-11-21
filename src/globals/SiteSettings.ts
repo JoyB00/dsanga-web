@@ -59,6 +59,20 @@ export const SiteSettings: GlobalConfig = {
             },
             { name: 'specialHours', type: 'textarea', localized: true },
             { name: 'parking', type: 'textarea', localized: true },
+            { name: 'transport', type: 'textarea', localized: true, admin: { description: 'How to get here (airport, Ubud, …).' } },
+            { name: 'accessibility', type: 'textarea', localized: true },
+          ],
+        },
+        {
+          label: 'Downloads',
+          fields: [
+            {
+              name: 'menuPdf',
+              type: 'upload',
+              relationTo: 'documents',
+              localized: true,
+              admin: { description: 'Printable menu per language. The “Download Menu” button hides when empty.' },
+            },
           ],
         },
         {

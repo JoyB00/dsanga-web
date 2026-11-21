@@ -106,6 +106,8 @@ async function seed() {
       ],
       specialHours: 'Closed on Nyepi (Balinese Day of Silence).',
       parking: 'Free parking for cars and motorbikes on site.',
+      transport: 'About 60 minutes by car or ride-hailing from the airport.\nAbout 25 minutes from Ubud, near Sukawati Art Market.',
+      accessibility: 'Step-free path to the bistro and pool deck. Accessible toilet available.',
       contactFormEnabled: true,
       verified: false,
     },
@@ -124,6 +126,8 @@ async function seed() {
       ]),
       specialHours: 'Tutup saat Hari Raya Nyepi.',
       parking: 'Parkir gratis untuk mobil dan motor di lokasi.',
+      transport: 'Sekitar 60 menit dari bandara dengan mobil atau ojek/taksi online.\nSekitar 25 menit dari Ubud, dekat Pasar Seni Sukawati.',
+      accessibility: 'Jalur tanpa tangga ke bistro dan dek kolam. Tersedia toilet ramah disabilitas.',
     },
   })
   log('site settings')
@@ -159,17 +163,29 @@ async function seed() {
       }),
     },
     {
-      en: { key: 'dining', type: 'dining', availability: 'available', order: 2, title: 'Bistro', tagline: 'Good Food for Everyone', whatsappContext: 'Bistro', hours: { weekday: '08.00–21.00', weekend: '08.00–21.00' } },
-      id: () => ({ title: 'Bistro', tagline: 'Makan Enak untuk Semua', whatsappContext: 'Bistro' }),
+      en: {
+        key: 'dining', type: 'dining', availability: 'available', order: 2, title: 'Bistro', tagline: 'Good Food for Everyone', whatsappContext: 'Bistro',
+        summary: 'Local and international dishes, specialty and classic coffee, served indoors or in the garden. Open to pool guests and walk-in visitors.',
+        hours: { weekday: '08.00–21.00', weekend: '08.00–21.00' },
+        facilities: [{ label: 'Indoor pavilion · 40 seats' }, { label: 'Garden tables · 60 seats' }, { label: 'Poolside snacks & drinks' }],
+      },
+      id: (d) => ({
+        title: 'Bistro', tagline: 'Makan Enak untuk Semua', whatsappContext: 'Bistro',
+        summary: 'Hidangan lokal dan internasional, kopi specialty dan klasik, disajikan di dalam ruangan atau di taman. Terbuka untuk tamu kolam dan pengunjung umum.',
+        facilities: rows(d, 'facilities', [{ label: 'Pavilion dalam · 40 kursi' }, { label: 'Meja taman · 60 kursi' }, { label: 'Camilan & minuman tepi kolam' }]),
+      }),
     },
     {
-      en: { key: 'coffee', type: 'dining', availability: 'available', order: 3, title: 'Coffee', tagline: 'Specialty & Classic', whatsappContext: 'Coffee' },
-      id: () => ({ title: 'Coffee', tagline: 'Specialty & Klasik', whatsappContext: 'Coffee' }),
+      en: { key: 'coffee', type: 'dining', availability: 'available', order: 3, title: 'Coffee', tagline: 'Specialty & Classic', whatsappContext: 'Coffee', summary: 'Single-origin Bali beans for manual brew, classic espresso drinks and traditional kopi Bali.' },
+      id: () => ({ title: 'Coffee', tagline: 'Specialty & Klasik', whatsappContext: 'Coffee', summary: 'Biji kopi single-origin Bali untuk manual brew, espresso klasik, dan kopi Bali tradisional.' }),
     },
     {
       en: {
         key: 'work-space', type: 'work', availability: 'available', order: 4, title: 'Work & Space', tagline: 'Be More Productive, Surrounded by Nature', whatsappContext: 'Work & Space',
         capacity: '24 desks · 1 meeting room (8)',
+        summary: 'Open-air pavilion desks with fast Wi-Fi, power at every table, coffee and food from the bistro, and a meeting room for small teams.',
+        facilities: [{ label: 'Fast Wi-Fi' }, { label: 'Comfortable desks' }, { label: 'Meeting room (optional)' }, { label: 'Coffee & food' }, { label: 'Calm atmosphere' }],
+        terms: rich('Desk passes are first come, first served. The meeting room needs confirmation by our staff.'),
         prices: [
           { label: 'Day pass', weekday: 'Rp75.000', unit: '/ day' },
           { label: 'Hourly (min. 2 hours)', weekday: 'Rp20.000', unit: '/ hour' },
@@ -179,6 +195,9 @@ async function seed() {
       id: (d) => ({
         title: 'Work & Space', tagline: 'Kerja Lebih Produktif di Tengah Alam', whatsappContext: 'Work & Space',
         capacity: '24 meja · 1 ruang meeting (8)',
+        summary: 'Meja di pavilion terbuka dengan Wi-Fi cepat, colokan di setiap meja, kopi dan makanan dari bistro, serta ruang meeting untuk tim kecil.',
+        facilities: rows(d, 'facilities', [{ label: 'Wi-Fi cepat' }, { label: 'Meja nyaman' }, { label: 'Ruang meeting (opsional)' }, { label: 'Kopi & makanan' }, { label: 'Suasana tenang' }]),
+        terms: rich('Meja harian berlaku siapa cepat dia dapat. Ruang meeting perlu dikonfirmasi oleh petugas kami.'),
         prices: rows(d, 'prices', [{ label: 'Harian', unit: '/ hari' }, { label: 'Per jam (min. 2 jam)', unit: '/ jam' }, { label: 'Ruang meeting', unit: '/ 2 jam' }]),
       }),
     },
@@ -203,6 +222,10 @@ async function seed() {
     [{ name: 'Kids Pasta', description: 'Mild tomato sauce', category: 'kids', price: 40000, featured: true }, { name: 'Pasta Anak', description: 'Saus tomat tidak pedas' }],
     [{ name: 'Pisang Goreng', description: 'Palm sugar, coconut', category: 'snacks', price: 30000, featured: true }, { name: 'Pisang Goreng', description: 'Gula aren, kelapa' }],
     [{ name: 'Kopi Bali', description: 'Traditional brew', category: 'coffee', price: 15000 }, { name: 'Kopi Bali', description: 'Seduhan tradisional' }],
+    [{ name: 'V60 Manual Brew', description: 'Single-origin Kintamani', category: 'coffee', price: 35000 }, { name: 'V60 Manual Brew', description: 'Single-origin Kintamani' }],
+    [{ name: 'Café Latte', description: 'Espresso, steamed milk', category: 'coffee', price: 28000 }, { name: 'Café Latte', description: 'Espresso, susu' }],
+    [{ name: 'Mie Goreng', description: 'Fried noodles, egg, vegetables', category: 'mains', price: 45000 }, { name: 'Mie Goreng', description: 'Mi goreng, telur, sayuran' }],
+    [{ name: 'Bubur Injin', description: 'Black rice pudding', category: 'desserts', price: 30000 }, { name: 'Bubur Injin', description: 'Bubur ketan hitam' }],
     [{ name: 'Fresh Coconut', description: 'Whole young coconut', category: 'drinks', price: 25000 }, { name: 'Kelapa Muda', description: 'Kelapa muda utuh' }],
   ]
   for (const [i, [en, id]] of menu.entries()) {
@@ -248,6 +271,9 @@ async function seed() {
     [{ topic: 'pool', question: 'Can children swim without an adult?', answer: 'Children under 12 must be accompanied by an adult in the water.' }, { question: 'Apakah anak boleh berenang tanpa pendamping?', answer: 'Anak di bawah 12 tahun wajib didampingi orang dewasa di dalam air.' }],
     [{ topic: 'general', question: 'Which payment methods are accepted?', answer: 'Cash, QRIS and debit/credit cards.' }, { question: 'Metode pembayaran apa saja yang diterima?', answer: 'Tunai, QRIS, dan kartu debit/kredit.' }],
     [{ topic: 'visit', question: 'Is there parking on site?', answer: 'Yes, free parking for cars and motorbikes.' }, { question: 'Apakah tersedia parkir?', answer: 'Ya, parkir gratis untuk mobil dan motor.' }],
+    [{ topic: 'work', question: 'Can I make video calls here?', answer: 'Yes. The meeting room is best for calls; the pavilion has a quiet zone until 17.00.' }, { question: 'Apakah bisa video call di sini?', answer: 'Bisa. Ruang meeting paling nyaman untuk panggilan; pavilion punya zona tenang hingga pukul 17.00.' }],
+    [{ topic: 'work', question: 'Can I reserve a desk in advance?', answer: 'Desks are first come, first served. The meeting room can be reserved via WhatsApp.' }, { question: 'Apakah meja bisa dipesan lebih dulu?', answer: 'Meja berlaku siapa cepat dia dapat. Ruang meeting bisa dipesan lewat WhatsApp.' }],
+    [{ topic: 'dining', question: 'Do you have vegetarian options?', answer: 'Yes, several dishes are vegetarian. Ask our staff about allergies.' }, { question: 'Apakah ada pilihan vegetarian?', answer: 'Ada, beberapa hidangan vegetarian. Tanyakan alergi kepada petugas kami.' }],
   ]
   for (const [i, [en, id]] of faqs.entries()) {
     await upsert(payload, 'faqs', { question: { equals: en.question } }, { ...en, order: i, verified: false }, () => id)

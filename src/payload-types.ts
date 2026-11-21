@@ -74,6 +74,7 @@ export interface Config {
     'venue-packages': VenuePackage;
     faqs: Faq;
     media: Media;
+    documents: Document;
     inquiries: Inquiry;
     users: User;
     'audit-logs': AuditLog;
@@ -91,6 +92,7 @@ export interface Config {
     'venue-packages': VenuePackagesSelect<false> | VenuePackagesSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -489,6 +491,25 @@ export interface Faq {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  title: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inquiries".
  */
 export interface Inquiry {
@@ -600,6 +621,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
       } | null)
     | ({
         relationTo: 'inquiries';
@@ -880,6 +905,24 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inquiries_select".
  */
 export interface InquiriesSelect<T extends boolean = true> {
@@ -1012,6 +1055,15 @@ export interface SiteSetting {
   specialHours?: string | null;
   parking?: string | null;
   /**
+   * How to get here (airport, Ubud, …).
+   */
+  transport?: string | null;
+  accessibility?: string | null;
+  /**
+   * Printable menu per language. The “Download Menu” button hides when empty.
+   */
+  menuPdf?: (number | null) | Document;
+  /**
    * F-14: show the contact / availability forms.
    */
   contactFormEnabled?: boolean | null;
@@ -1050,6 +1102,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
       };
   specialHours?: T;
   parking?: T;
+  transport?: T;
+  accessibility?: T;
+  menuPdf?: T;
   contactFormEnabled?: T;
   verified?: T;
   updatedAt?: T;

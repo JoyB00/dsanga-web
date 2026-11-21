@@ -51,3 +51,6 @@ node_modules/
 
 # Payload uploads (local dev; production uses object storage)
 /media
+
+# Payload document uploads (local dev)
+/documents

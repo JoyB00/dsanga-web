@@ -1,10 +1,8 @@
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import type { Media } from '@/payload-types'
+import { Breadcrumbs, type Crumb } from './Breadcrumbs'
 import { CmsImage } from './CmsImage'
-
-type Crumb = { label: string; href?: string }
 
 type Props = {
   crumbs: Crumb[]
@@ -22,22 +20,7 @@ export function PageHero({ crumbs, title, tagline, intro, actions, image, imageP
     <section className="pt-10 pb-12 md:pt-14 md:pb-16">
       <div className="container-content grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col gap-5">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex flex-wrap gap-1 text-small text-muted-foreground">
-              {crumbs.map((crumb, i) => (
-                <li key={crumb.label} className="flex gap-1">
-                  {i > 0 && <span aria-hidden="true">/</span>}
-                  {crumb.href ? (
-                    <Link href={crumb.href} className="text-muted-foreground underline-offset-4 hover:underline">
-                      {crumb.label}
-                    </Link>
-                  ) : (
-                    <span aria-current="page">{crumb.label}</span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
+          <Breadcrumbs crumbs={crumbs} />
           <h1>{title}</h1>
           {tagline && <p className="text-h3 font-bold text-foreground">{tagline}</p>}
           {intro && <p className="max-w-xl text-body-lg text-muted-foreground">{intro}</p>}
@@ -51,6 +34,22 @@ export function PageHero({ crumbs, title, tagline, intro, actions, image, imageP
           sizes="(min-width: 1024px) 55vw, 100vw"
           className="aspect-[4/3] w-full rounded-media"
         />
+      </div>
+    </section>
+  )
+}
+
+/** Text-only page header (Visit Us, Contact, Privacy…). */
+export function PageHeader({ crumbs, title, tagline, intro }: Omit<Props, 'image' | 'imagePlaceholder' | 'actions'>) {
+  return (
+    <section className="pt-10 pb-8 md:pt-14">
+      <div className="container-content">
+        <div className="flex max-w-3xl flex-col gap-4">
+          <Breadcrumbs crumbs={crumbs} />
+          <h1>{title}</h1>
+          {tagline && <p className="text-h3 font-bold text-foreground">{tagline}</p>}
+          {intro && <p className="text-body-lg text-muted-foreground">{intro}</p>}
+        </div>
       </div>
     </section>
   )
