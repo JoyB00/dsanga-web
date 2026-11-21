@@ -67,8 +67,16 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    experiences: Experience;
+    'menu-items': MenuItem;
+    events: Event;
+    offers: Offer;
+    'venue-packages': VenuePackage;
+    faqs: Faq;
     media: Media;
+    inquiries: Inquiry;
+    users: User;
+    'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,20 +84,32 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
+    'menu-items': MenuItemsSelect<false> | MenuItemsSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    offers: OffersSelect<false> | OffersSelect<true>;
+    'venue-packages': VenuePackagesSelect<false> | VenuePackagesSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'id') | ('en' | 'id')[];
+  globals: {
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
+  locale: 'en' | 'id';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -119,10 +139,382 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences".
+ */
+export interface Experience {
+  id: number;
+  title: string;
+  /**
+   * Stable id used by the site, e.g. pool, dining, coffee, work-space, playground, wellness.
+   */
+  key: string;
+  type: 'pool' | 'dining' | 'work' | 'activity';
+  availability: 'available' | 'coming-soon' | 'hidden';
+  order?: number | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  tagline?: string | null;
+  summary?: string | null;
+  heroImage?: (number | null) | Media;
+  gallery?: (number | Media)[] | null;
+  facilities?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  capacity?: string | null;
+  hours?: {
+    weekday?: string | null;
+    weekend?: string | null;
+    note?: string | null;
+  };
+  prices?:
+    | {
+        label: string;
+        weekday?: string | null;
+        weekend?: string | null;
+        unit?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  paymentNote?: string | null;
+  rules?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  childPolicy?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  terms?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Topic used in the pre-filled WhatsApp message, e.g. "Pool" (F-03).
+   */
+  whatsappContext?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Describe the photo for screen readers. Required in English and Indonesian.
+   */
+  alt: string;
+  caption?: string | null;
+  showInGallery?: boolean | null;
+  galleryCategory?: ('ambience' | 'pool' | 'dining' | 'work' | 'activities' | 'events') | null;
+  /**
+   * Photo credit / permission note (spec §9 Kepatuhan).
+   */
+  usageRights?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-items".
+ */
+export interface MenuItem {
+  id: number;
+  name: string;
+  description?: string | null;
+  category: 'mains' | 'snacks' | 'kids' | 'coffee' | 'drinks' | 'desserts';
+  /**
+   * Rupiah, no separators.
+   */
+  price: number;
+  dietaryNote?: string | null;
+  image?: (number | null) | Media;
+  featured?: boolean | null;
+  available?: boolean | null;
+  order?: number | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  category: 'class' | 'workshop' | 'music' | 'market' | 'community';
+  startsAt: string;
+  endsAt?: string | null;
+  location?: string | null;
+  summary?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  image?: (number | null) | Media;
+  capacity?: number | null;
+  price?: string | null;
+  /**
+   * Show "Join via WhatsApp" with the event name as context.
+   */
+  joinViaWhatsApp?: boolean | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers".
+ */
+export interface Offer {
+  id: number;
+  title: string;
+  category?: string | null;
+  validFrom: string;
+  validUntil: string;
+  summary?: string | null;
+  image?: (number | null) | Media;
+  price?: number | null;
+  originalPrice?: number | null;
+  priceUnit?: string | null;
+  terms?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venue-packages".
+ */
+export interface VenuePackage {
+  id: number;
+  name: string;
+  capacity: number;
+  /**
+   * Leave empty for "On request".
+   */
+  priceFrom?: number | null;
+  inclusions?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  order?: number | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: string;
+  topic: 'general' | 'pool' | 'dining' | 'work' | 'events' | 'visit';
+  order?: number | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries".
+ */
+export interface Inquiry {
+  id: number;
+  name: string;
+  email: string;
+  whatsapp?: string | null;
+  topic?: ('general' | 'pool' | 'dining' | 'work' | 'events' | 'other') | null;
+  visitDate?: string | null;
+  people?: number | null;
+  message: string;
+  locale?: ('en' | 'id') | null;
+  consent: boolean;
+  website?: string | null;
+  status?: ('new' | 'answered' | 'closed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name: string;
+  role: 'super-admin' | 'approver' | 'content-admin' | 'product-admin' | 'viewer';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -145,29 +537,24 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "audit-logs".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface AuditLog {
+  id: number;
+  action: 'create' | 'update' | 'publish' | 'delete';
+  collectionSlug: string;
+  documentId: string;
+  summary?: string | null;
+  user?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -184,20 +571,52 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'experiences';
+        value: number | Experience;
+      } | null)
+    | ({
+        relationTo: 'menu-items';
+        value: number | MenuItem;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'offers';
+        value: number | Offer;
+      } | null)
+    | ({
+        relationTo: 'venue-packages';
+        value: number | VenuePackage;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'inquiries';
+        value: number | Inquiry;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -207,10 +626,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -230,7 +649,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -238,9 +657,253 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences_select".
+ */
+export interface ExperiencesSelect<T extends boolean = true> {
+  title?: T;
+  key?: T;
+  type?: T;
+  availability?: T;
+  order?: T;
+  verified?: T;
+  pic?: T;
+  tagline?: T;
+  summary?: T;
+  heroImage?: T;
+  gallery?: T;
+  facilities?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  capacity?: T;
+  hours?:
+    | T
+    | {
+        weekday?: T;
+        weekend?: T;
+        note?: T;
+      };
+  prices?:
+    | T
+    | {
+        label?: T;
+        weekday?: T;
+        weekend?: T;
+        unit?: T;
+        id?: T;
+      };
+  paymentNote?: T;
+  rules?: T;
+  childPolicy?: T;
+  terms?: T;
+  whatsappContext?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu-items_select".
+ */
+export interface MenuItemsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  category?: T;
+  price?: T;
+  dietaryNote?: T;
+  image?: T;
+  featured?: T;
+  available?: T;
+  order?: T;
+  verified?: T;
+  pic?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  category?: T;
+  startsAt?: T;
+  endsAt?: T;
+  location?: T;
+  summary?: T;
+  description?: T;
+  image?: T;
+  capacity?: T;
+  price?: T;
+  joinViaWhatsApp?: T;
+  verified?: T;
+  pic?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offers_select".
+ */
+export interface OffersSelect<T extends boolean = true> {
+  title?: T;
+  category?: T;
+  validFrom?: T;
+  validUntil?: T;
+  summary?: T;
+  image?: T;
+  price?: T;
+  originalPrice?: T;
+  priceUnit?: T;
+  terms?: T;
+  verified?: T;
+  pic?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venue-packages_select".
+ */
+export interface VenuePackagesSelect<T extends boolean = true> {
+  name?: T;
+  capacity?: T;
+  priceFrom?: T;
+  inclusions?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  order?: T;
+  verified?: T;
+  pic?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  topic?: T;
+  order?: T;
+  verified?: T;
+  pic?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  caption?: T;
+  showInGallery?: T;
+  galleryCategory?: T;
+  usageRights?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumb?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries_select".
+ */
+export interface InquiriesSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  whatsapp?: T;
+  topic?: T;
+  visitDate?: T;
+  people?: T;
+  message?: T;
+  locale?: T;
+  consent?: T;
+  website?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -261,21 +924,16 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
+ * via the `definition` "audit-logs_select".
  */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
+export interface AuditLogsSelect<T extends boolean = true> {
+  action?: T;
+  collectionSlug?: T;
+  documentId?: T;
+  summary?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -316,6 +974,87 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * International format without + or spaces, e.g. 6281234567890. Used by every WhatsApp button (F-03). During development: vendor test number only.
+   */
+  whatsappNumber: string;
+  serviceHours?: string | null;
+  email?: string | null;
+  /**
+   * Empty links are hidden on the site.
+   */
+  social?: {
+    instagram?: string | null;
+    facebook?: string | null;
+    tiktok?: string | null;
+  };
+  address: string;
+  /**
+   * Google Maps link for "Get Directions".
+   */
+  mapsUrl?: string | null;
+  mapEmbedUrl?: string | null;
+  openingHours?:
+    | {
+        area: string;
+        weekday?: string | null;
+        weekend?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  specialHours?: string | null;
+  parking?: string | null;
+  /**
+   * F-14: show the contact / availability forms.
+   */
+  contactFormEnabled?: boolean | null;
+  /**
+   * F-15: all contact data above is final and approved.
+   */
+  verified?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  whatsappNumber?: T;
+  serviceHours?: T;
+  email?: T;
+  social?:
+    | T
+    | {
+        instagram?: T;
+        facebook?: T;
+        tiktok?: T;
+      };
+  address?: T;
+  mapsUrl?: T;
+  mapEmbedUrl?: T;
+  openingHours?:
+    | T
+    | {
+        area?: T;
+        weekday?: T;
+        weekend?: T;
+        id?: T;
+      };
+  specialHours?: T;
+  parking?: T;
+  contactFormEnabled?: T;
+  verified?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

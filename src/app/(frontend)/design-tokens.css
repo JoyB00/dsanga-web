@@ -1,0 +1,115 @@
+/* Design Tokens - Auto-generated */
+/* Do not edit directly - modify tokens.json instead */
+
+/* === PRIMITIVES === */
+:root {
+  --primitive-color-forest-700: #1F4D3A;
+  --primitive-color-forest-800: #163828;
+  --primitive-color-leaf-100: #E4EEE3;
+  --primitive-color-leaf-600: #3F7D52;
+  --primitive-color-gold-300: #E2C58F;
+  --primitive-color-gold-500: #C8963E;
+  --primitive-color-gold-800: #8A5A1C;
+  --primitive-color-terracotta-700: #A4532F;
+  --primitive-color-cream-50: #F7F3EA;
+  --primitive-color-cream-100: #EFE7D6;
+  --primitive-color-cream-200: #E1D8C3;
+  --primitive-color-cream-300: #D9CFBB;
+  --primitive-color-stone-500: #8C8676;
+  --primitive-color-stone-700: #5B6358;
+  --primitive-color-stone-900: #1F2A24;
+  --primitive-color-red-700: #B42318;
+  --primitive-color-white: #FFFFFF;
+  --primitive-font-display: 'Caveat', cursive;
+  --primitive-font-sans: 'Nunito Sans', system-ui, sans-serif;
+  --primitive-radius-12: 12px;
+  --primitive-radius-20: 20px;
+  --primitive-radius-32: 32px;
+  --primitive-radius-pill: 9999px;
+  --primitive-shadow-sm: 0 2px 8px rgba(31, 42, 36, 0.06);
+  --primitive-shadow-md: 0 12px 32px rgba(31, 42, 36, 0.10);
+  --primitive-space-1: 8px;
+  --primitive-space-2: 16px;
+  --primitive-space-3: 24px;
+  --primitive-space-4: 32px;
+  --primitive-space-6: 48px;
+  --primitive-space-8: 64px;
+  --primitive-space-12: 96px;
+  --primitive-duration-fast: 150ms;
+  --primitive-duration-base: 200ms;
+  --primitive-duration-reveal: 350ms;
+}
+
+/* === SEMANTIC === */
+:root {
+  --ds-color-background: #F7F3EA;
+  --ds-color-surface: #FFFFFF;
+  --ds-color-surface-alt: #EFE7D6;
+  --ds-color-foreground: #1F2A24;
+  --ds-color-muted-foreground: #5B6358;
+  --ds-color-primary: #1F4D3A;
+  --ds-color-primary-hover: #163828;
+  --ds-color-on-primary: #FFFFFF;
+  --ds-color-secondary: #3F7D52;
+  --ds-color-highlight: #E4EEE3;
+  --ds-color-accent: #C8963E;
+  --ds-color-accent-text: #8A5A1C;
+  --ds-color-accent-on-dark: #E2C58F;
+  --ds-color-warm: #A4532F;
+  --ds-color-on-warm: #FFFFFF;
+  --ds-color-border: #D9CFBB;
+  --ds-color-placeholder: #E1D8C3;
+  --ds-color-input-border: #8C8676;
+  --ds-color-danger: #B42318;
+  --ds-color-ring: #C8963E;
+  --ds-font-display: 'Caveat', cursive;
+  --ds-font-body: 'Nunito Sans', system-ui, sans-serif;
+  --ds-radius-control: 12px;
+  --ds-radius-card: 20px;
+  --ds-radius-media: 32px;
+  --ds-radius-pill: 9999px;
+  --ds-shadow-card: 0 2px 8px rgba(31, 42, 36, 0.06);
+  --ds-shadow-raised: 0 12px 32px rgba(31, 42, 36, 0.10);
+  --ds-space-section-desktop: 96px;
+  --ds-space-section-mobile: 56px;
+  --ds-space-gutter: 24px;
+  --ds-size-touch-min: 44px;
+  --ds-size-control-height: 48px;
+  --ds-size-content-max: 1200px;
+  --ds-focus-ring-width: 3px;
+  --ds-focus-ring-offset: 3px;
+}
+
+/* === COMPONENTS === */
+:root {
+  --ds-button-height: 48px;
+  --ds-button-padding-x: 24px;
+  --ds-button-radius: 9999px;
+  --ds-button-primary-bg: #1F4D3A;
+  --ds-button-primary-bg-hover: #163828;
+  --ds-button-primary-fg: #FFFFFF;
+  --ds-button-outline-border: #1F4D3A;
+  --ds-button-outline-fg: #1F4D3A;
+  --ds-button-outline-bg-hover: #E4EEE3;
+  --ds-card-bg: #FFFFFF;
+  --ds-card-radius: 20px;
+  --ds-card-shadow: 0 2px 8px rgba(31, 42, 36, 0.06);
+  --ds-card-shadow-hover: 0 12px 32px rgba(31, 42, 36, 0.10);
+  --ds-card-padding: 24px;
+  --ds-badge-available-bg: #E4EEE3;
+  --ds-badge-available-fg: #1F4D3A;
+  --ds-badge-soon-bg: #A4532F;
+  --ds-badge-soon-fg: #FFFFFF;
+  --ds-badge-tag-bg: #EFE7D6;
+  --ds-badge-tag-fg: #1F2A24;
+  --ds-input-height: 48px;
+  --ds-input-border: #8C8676;
+  --ds-input-border-error: #B42318;
+  --ds-input-radius: 12px;
+  --ds-input-font-size: 16px;
+  --ds-header-bg: #FFFFFF;
+  --ds-header-active-indicator: #1F4D3A;
+  --ds-footer-bg: #1F4D3A;
+  --ds-footer-fg: #F7F3EA;
+  --ds-footer-accent: #E2C58F;
+}

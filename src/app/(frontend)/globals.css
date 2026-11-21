@@ -1,0 +1,157 @@
+/*
+ * D'Sanga — global styles for Next.js (App Router) + Tailwind CSS v4.
+ * Place at src/app/globals.css next to design-tokens.css.
+ * Tokens come from design-tokens.json → design-tokens.css (do not hand-edit that file).
+ */
+@import "tailwindcss";
+@import "./design-tokens.css";
+
+/* Remove Tailwind's default palette so only D'Sanga colours exist as utilities. */
+@theme {
+  --color-*: initial;
+}
+
+/* Map semantic tokens to Tailwind utilities: bg-primary, text-muted-foreground, rounded-card, shadow-card … */
+@theme inline {
+  /* Colour */
+  --color-background: var(--ds-color-background);
+  --color-surface: var(--ds-color-surface);
+  --color-surface-alt: var(--ds-color-surface-alt);
+  --color-foreground: var(--ds-color-foreground);
+  --color-muted-foreground: var(--ds-color-muted-foreground);
+  --color-primary: var(--ds-color-primary);
+  --color-primary-hover: var(--ds-color-primary-hover);
+  --color-on-primary: var(--ds-color-on-primary);
+  --color-secondary: var(--ds-color-secondary);
+  --color-highlight: var(--ds-color-highlight);
+  --color-accent: var(--ds-color-accent);
+  --color-accent-text: var(--ds-color-accent-text);
+  --color-accent-on-dark: var(--ds-color-accent-on-dark);
+  --color-warm: var(--ds-color-warm);
+  --color-on-warm: var(--ds-color-on-warm);
+  --color-border: var(--ds-color-border);
+  --color-placeholder: var(--ds-color-placeholder);
+  --color-input-border: var(--ds-color-input-border);
+  --color-danger: var(--ds-color-danger);
+  --color-ring: var(--ds-color-ring);
+  --color-white: #FFFFFF;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Fonts — variables are set by next/font in src/app/fonts.ts */
+  --font-display: var(--font-caveat), cursive;
+  --font-sans: var(--font-nunito-sans), system-ui, sans-serif;
+
+  /* Type scale (mobile-first values; larger sizes via md:/lg: utilities) */
+  --text-display-xl: 2.75rem;      /* 44px — h1 mobile   */
+  --text-display-xl--line-height: 1.02;
+  --text-display-2xl: 4.25rem;     /* 68px — h1 desktop  */
+  --text-display-2xl--line-height: 1.02;
+  --text-display-lg: 2.125rem;     /* 34px — h2 mobile, card h2 */
+  --text-display-lg--line-height: 1.08;
+  --text-display-xlg: 2.875rem;    /* 46px — h2 desktop  */
+  --text-display-xlg--line-height: 1.08;
+  --text-h3: 1.625rem;             /* 26px */
+  --text-h3--line-height: 1.25;
+  --text-body-lg: 1.125rem;        /* 18px */
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1rem;               /* 16px — minimum body size */
+  --text-body--line-height: 1.6;
+  --text-small: 0.875rem;          /* 14px */
+  --text-small--line-height: 1.55;
+  --text-caption: 0.8125rem;       /* 13px — eyebrows, captions */
+  --text-caption--line-height: 1.4;
+
+  /* Radius */
+  --radius-control: var(--ds-radius-control);
+  --radius-card: var(--ds-radius-card);
+  --radius-media: var(--ds-radius-media);
+
+  /* Shadow */
+  --shadow-card: var(--ds-shadow-card);
+  --shadow-raised: var(--ds-shadow-raised);
+
+  /* Layout */
+  --container-content: var(--ds-size-content-max);
+  --spacing-section: var(--ds-space-section-desktop);
+  --spacing-section-mobile: var(--ds-space-section-mobile);
+  --spacing-control: var(--ds-size-control-height);
+  --spacing-touch: var(--ds-size-touch-min);
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 96px;      /* keeps focused/anchored content clear of a sticky header */
+    scroll-padding-bottom: 88px;   /* and clear of the mobile WhatsApp button */
+  }
+  body {
+    @apply bg-background text-foreground font-sans text-body antialiased;
+  }
+  h1, h2 {
+    @apply font-display font-bold text-primary;
+  }
+  h1 { @apply text-display-xl lg:text-display-2xl; }
+  h2 { @apply text-display-lg lg:text-display-xlg; }
+  h3 { @apply font-sans font-extrabold text-h3; }
+  a { @apply text-primary; }
+  a:hover { @apply text-primary-hover; }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: var(--ds-focus-ring-width) solid var(--ds-color-ring);
+    outline-offset: var(--ds-focus-ring-offset);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Base building blocks (Tailwind v4 @utility, so they can be composed with @apply and variants). */
+@utility btn {
+  @apply inline-flex min-h-control items-center justify-center gap-2 rounded-full px-6
+         text-body font-bold no-underline transition-colors duration-200
+         disabled:pointer-events-none disabled:opacity-50;
+}
+@utility card {
+  @apply rounded-card bg-surface shadow-card transition-shadow duration-200;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-caption font-bold;
+}
+
+/* Shared component classes. Prefer React components in src/components/ui that use these. */
+@layer components {
+  .container-content { @apply mx-auto w-full max-w-content px-6; }
+  .section { @apply py-section-mobile md:py-section; }
+  .section-alt { @apply bg-surface-alt; }
+
+  .eyebrow { @apply text-caption font-bold uppercase tracking-[0.16em] text-accent-text; }
+
+  .btn-primary { @apply btn bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary; }
+  .btn-outline { @apply btn border-2 border-primary bg-surface text-primary hover:bg-highlight hover:text-primary-hover; }
+  .btn-link    { @apply inline-flex min-h-touch items-center font-bold text-primary underline-offset-4 hover:underline; }
+
+  .card-interactive { @apply card hover:shadow-raised; }
+
+  .icon-circle { @apply inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-highlight text-primary; }
+
+  .badge-available { @apply badge bg-highlight text-primary; }
+  .badge-soon      { @apply badge bg-warm text-on-warm; }
+  .badge-tag       { @apply badge bg-surface-alt text-foreground; }
+  .badge-validity  { @apply badge border-[1.5px] border-accent-text text-accent-text; }
+
+  .field-label { @apply flex flex-col gap-1.5 text-small font-bold text-foreground; }
+  .field-input {
+    @apply min-h-control w-full rounded-control border-2 border-input-border bg-surface px-3.5
+           text-body text-foreground;
+  }
+  .field-input[aria-invalid="true"] { @apply border-danger; }
+  .field-error { @apply text-caption font-semibold text-danger; }
+
+  .media { @apply overflow-hidden rounded-media bg-placeholder; }
+}
