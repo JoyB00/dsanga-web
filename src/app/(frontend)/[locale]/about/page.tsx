@@ -13,6 +13,7 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { iconFor } from '@/lib/icons'
 import { getSiteSettings } from '@/lib/payload'
 import { getAboutPage, getGalleryMedia } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -20,7 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
   const about = await getAboutPage(locale)
-  return { title: about?.hero?.title || t.about.title, description: about?.hero?.intro || t.about.intro }
+  return pageMetadata({
+    key: 'about',
+    locale,
+    title: about?.hero?.title || t.about.title,
+    description: about?.hero?.intro || t.about.intro,
+    image: about?.hero?.image,
+  })
 }
 
 export default async function AboutPage({ params }: Props) {

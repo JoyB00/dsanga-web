@@ -22,6 +22,8 @@ export function LanguageSwitcher({ locale, label }: { locale: Locale; label: str
       <Link
         href={to}
         hrefLang={target}
+        // No prefetch: the cookie must be set (on click) before the target page is requested.
+        prefetch={false}
         lang={target}
         aria-label={label}
         onClick={() => {

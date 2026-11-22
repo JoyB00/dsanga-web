@@ -7,12 +7,14 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { getPageHead } from '@/lib/pageHead'
 import { mediaSrc } from '@/lib/media'
 import { getGalleryMedia } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const head = await getPageHead('gallery', await localeFromParams(params))
-  return { title: head.title, description: head.intro || head.tagline }
+  const locale = await localeFromParams(params)
+  const head = await getPageHead('gallery', locale)
+  return pageMetadata({ key: 'gallery', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
 }
 
 export default async function GalleryPage({ params }: Props) {

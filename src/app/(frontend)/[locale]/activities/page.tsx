@@ -13,12 +13,14 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getActivities } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const head = await getPageHead('activities', await localeFromParams(params))
-  return { title: head.title, description: head.intro || head.tagline }
+  const locale = await localeFromParams(params)
+  const head = await getPageHead('activities', locale)
+  return pageMetadata({ key: 'activities', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
 }
 
 export default async function ActivitiesPage({ params }: Props) {

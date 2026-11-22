@@ -16,6 +16,7 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getFaqs } from '@/lib/queries'
 import { whatsappUrl } from '@/lib/whatsapp'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -26,11 +27,16 @@ const resolve = async (params: Props['params']): Promise<Locale> => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await resolve(params)
-  const pool = await getExperience('pool', locale)
-  return {
-    title: pool?.meta?.title || pool?.title || getDictionary(locale).nav.pool,
-    description: pool?.meta?.description || pool?.summary || undefined,
-  }
+  const exp = await getExperience('pool', locale)
+  // The SEO tab title (if filled in) already ends with "— D’Sanga", so it is used as-is.
+  return pageMetadata({
+    key: 'pool',
+    locale,
+    title: exp?.meta?.title || exp?.title || getDictionary(locale).nav.pool,
+    absoluteTitle: Boolean(exp?.meta?.title),
+    description: exp?.meta?.description || exp?.summary,
+    image: exp?.meta?.image || exp?.heroImage,
+  })
 }
 
 export default async function PoolPage({ params }: Props) {

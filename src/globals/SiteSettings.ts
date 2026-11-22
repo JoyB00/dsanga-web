@@ -85,6 +85,24 @@ export const SiteSettings: GlobalConfig = {
               admin: { description: 'F-14: show the contact / availability forms.' },
             },
             {
+              name: 'inquiryRecipients',
+              type: 'text',
+              // Staff-only: Site settings are publicly readable through the API.
+              access: { read: ({ req }) => Boolean(req.user) },
+              validate: (value: string | null | undefined) =>
+                !value ||
+                value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .every((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) ||
+                'Enter email addresses separated by commas.',
+              admin: {
+                description:
+                  'F-14: PIC email address(es) that receive new form messages, separated by commas. Empty = the contact email above. During development: vendor test email only.',
+              },
+            },
+            {
               name: 'verified',
               type: 'checkbox',
               defaultValue: false,

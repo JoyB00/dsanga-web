@@ -12,12 +12,14 @@ import { getPageHead } from '@/lib/pageHead'
 import { formatDate, formatRupiah } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getActiveOffers } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const head = await getPageHead('offers', await localeFromParams(params))
-  return { title: head.title, description: head.intro || head.tagline }
+  const locale = await localeFromParams(params)
+  const head = await getPageHead('offers', locale)
+  return pageMetadata({ key: 'offers', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
 }
 
 export default async function OffersPage({ params }: Props) {

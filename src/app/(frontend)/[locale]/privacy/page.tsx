@@ -6,13 +6,15 @@ import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { formatDate } from '@/lib/format'
 import { getPrivacyPage } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
+  const t = getDictionary(locale)
   const privacy = await getPrivacyPage(locale)
-  return { title: privacy?.title || getDictionary(locale).privacy.title }
+  return pageMetadata({ key: 'privacy', locale, title: privacy?.title || t.privacy.title, description: t.privacy.description })
 }
 
 /** Policy text is edited in the CMS (Privacy policy global, approver only). */

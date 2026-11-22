@@ -6,6 +6,7 @@ import { useId, useRef, useState, type FormEvent } from 'react'
 
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionaries'
+import { trackEvent } from '@/lib/analytics'
 
 type Variant = 'contact' | 'work'
 type Field = 'name' | 'email' | 'message' | 'consent' | 'visitDate' | 'people'
@@ -82,6 +83,7 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error(String(res.status))
+      trackEvent('generate_lead', { form: variant, topic: body.topic, site_language: locale })
       setStatus('sent')
       form.reset()
     } catch {

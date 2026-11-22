@@ -3,11 +3,14 @@ import Link from 'next/link'
 import type { SiteSetting } from '../payload-types'
 import { href, type Locale, type RouteKey } from '../i18n/config'
 import { getDictionary } from '../i18n/dictionaries'
+import { CookieSettingsButton } from './Analytics'
 
 const EXPLORE: RouteKey[] = ['pool', 'dining', 'workSpace', 'activities', 'events']
 const INFO: RouteKey[] = ['about', 'gallery', 'offers', 'visit', 'contact', 'privacy']
 
-export function SiteFooter({ locale, settings }: { locale: Locale; settings: SiteSetting | null }) {
+type Props = { locale: Locale; settings: SiteSetting | null; analyticsEnabled?: boolean }
+
+export function SiteFooter({ locale, settings, analyticsEnabled }: Props) {
   const t = getDictionary(locale)
   const year = new Date().getFullYear()
 
@@ -40,7 +43,10 @@ export function SiteFooter({ locale, settings }: { locale: Locale; settings: Sit
         </div>
       </div>
       <div className="border-t border-background/20">
-        <p className="container-content py-5 text-caption">© {year} D’Sanga · Desa Sukawati</p>
+        <div className="container-content flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
+          <p className="py-2 text-caption">© {year} D’Sanga · Desa Sukawati</p>
+          {analyticsEnabled && <CookieSettingsButton label={t.cookies.settings} />}
+        </div>
       </div>
     </footer>
   )

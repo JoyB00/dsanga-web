@@ -12,6 +12,7 @@ import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getFaqs } from '@/lib/queries'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -29,11 +30,16 @@ const iconFor = (label: string): LucideIcon => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
-  const work = await getExperience('work-space', locale)
-  return {
-    title: work?.meta?.title || work?.title || getDictionary(locale).nav.workSpace,
-    description: work?.meta?.description || work?.summary || undefined,
-  }
+  const exp = await getExperience('work-space', locale)
+  // The SEO tab title (if filled in) already ends with "— D’Sanga", so it is used as-is.
+  return pageMetadata({
+    key: 'workSpace',
+    locale,
+    title: exp?.meta?.title || exp?.title || getDictionary(locale).nav.workSpace,
+    absoluteTitle: Boolean(exp?.meta?.title),
+    description: exp?.meta?.description || exp?.summary,
+    image: exp?.meta?.image || exp?.heroImage,
+  })
 }
 
 export default async function WorkSpacePage({ params }: Props) {

@@ -18,6 +18,16 @@ export function proxy(request: NextRequest) {
   const redirect = (to: string) => NextResponse.redirect(new URL(`${to}${search}`, request.url), 308)
   const rewrite = (to: string) => NextResponse.rewrite(new URL(`${to}${search}`, request.url))
 
+  // Spec §3.2: the language switcher stores the visitor's choice in NEXT_LOCALE. Someone who chose
+  // Indonesian and comes back to the home page lands on /id. Only real page loads are redirected
+  // (not Next.js prefetch/RSC requests), and crawlers send no cookie, so both versions stay indexable.
+  // (Next.js strips its own RSC headers before the proxy runs, so use the browser's fetch metadata.)
+  const dest = request.headers.get('sec-fetch-dest')
+  const isPageLoad = dest ? dest === 'document' : (request.headers.get('accept') ?? '').includes('text/html')
+  if (segments.length === 0 && isPageLoad && request.cookies.get('NEXT_LOCALE')?.value === 'id') {
+    return NextResponse.redirect(new URL(`/id${search}`, request.url), 307)
+  }
+
   if (first === 'en') {
     return redirect(`/${segments.slice(1).join('/')}`)
   }

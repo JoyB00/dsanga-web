@@ -24,6 +24,8 @@ import { PrivacyPage } from './globals/PrivacyPage'
 import { SiteSettings } from './globals/SiteSettings'
 import { requireBothLocales, requireBothLocalesGlobal } from './hooks/requireBothLocales'
 import { withRevalidate, withRevalidateGlobal } from './hooks/revalidate'
+import { emailAdapter } from './integrations/email'
+import { storagePlugin } from './integrations/storage'
 import type { CollectionConfig, GlobalConfig } from 'payload'
 
 /** F-08: required text that must exist in both languages before publishing. */
@@ -77,6 +79,7 @@ export default buildConfig({
   collections: [...contentCollections, Inquiries, Users, AuditLogs],
   globals: contentGlobals,
   editor: lexicalEditor(),
+  email: emailAdapter,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -88,6 +91,7 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    storagePlugin,
     seoPlugin({
       collections: ['experiences', 'events', 'offers'],
       uploadsCollection: 'media',

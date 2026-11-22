@@ -264,6 +264,7 @@ const en = {
   },
   privacy: {
     title: 'Privacy Policy',
+    description: 'What data D’Sanga collects through this website, why, how long we keep it and your rights.',
     updated: 'Last updated',
     toc: 'On this page',
     sections: [
@@ -294,6 +295,14 @@ const en = {
     ],
   },
   footer: { managedBy: 'Managed by Desa Sukawati', explore: 'Explore', information: 'Information', contact: 'Contact' },
+  cookies: {
+    title: 'Cookies on this site',
+    text: 'With your permission we use Google Analytics cookies to see which pages help visitors. Your language choice is kept in an essential cookie.',
+    accept: 'Accept analytics',
+    decline: 'Decline',
+    more: 'Privacy policy',
+    settings: 'Cookie settings',
+  },
 }
 
 type Dictionary = typeof en
@@ -562,6 +571,7 @@ const id: Dictionary = {
   },
   privacy: {
     title: 'Kebijakan Privasi',
+    description: 'Data apa yang dikumpulkan D’Sanga melalui website ini, untuk apa, berapa lama disimpan, dan hak Anda.',
     updated: 'Terakhir diperbarui',
     toc: 'Di halaman ini',
     sections: [
@@ -592,6 +602,14 @@ const id: Dictionary = {
     ],
   },
   footer: { managedBy: 'Dikelola oleh Desa Sukawati', explore: 'Jelajahi', information: 'Informasi', contact: 'Kontak' },
+  cookies: {
+    title: 'Cookie di situs ini',
+    text: 'Dengan izin Anda, kami memakai cookie Google Analytics untuk melihat halaman mana yang membantu pengunjung. Pilihan bahasa Anda disimpan dalam cookie esensial.',
+    accept: 'Terima analitik',
+    decline: 'Tolak',
+    more: 'Kebijakan privasi',
+    settings: 'Pengaturan cookie',
+  },
 }
 
 const dictionaries: Record<Locale, Dictionary> = { en, id }

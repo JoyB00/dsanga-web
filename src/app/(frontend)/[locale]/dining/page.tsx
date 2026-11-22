@@ -13,6 +13,7 @@ import { formatRupiah } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getMenuItems } from '@/lib/queries'
 import type { MenuItem } from '@/payload-types'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -20,11 +21,17 @@ const CATEGORY_ORDER: MenuItem['category'][] = ['mains', 'snacks', 'kids', 'coff
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
-  const dining = await getExperience('dining', locale)
-  return {
-    title: dining?.meta?.title || getDictionary(locale).dining.title,
-    description: dining?.meta?.description || dining?.summary || undefined,
-  }
+  const exp = await getExperience('dining', locale)
+  // The SEO tab title (if filled in) already ends with "— D’Sanga", so it is used as-is.
+  return pageMetadata({
+    key: 'dining',
+    locale,
+    // The page covers the bistro and the coffee bar, so its name comes from the dictionary, not the experience.
+    title: exp?.meta?.title || getDictionary(locale).dining.title,
+    absoluteTitle: Boolean(exp?.meta?.title),
+    description: exp?.meta?.description || exp?.summary,
+    image: exp?.meta?.image || exp?.heroImage,
+  })
 }
 
 export default async function DiningPage({ params }: Props) {

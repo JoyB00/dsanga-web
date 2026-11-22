@@ -273,6 +273,8 @@ export interface Media {
    * Photo credit / permission note (spec §9 Kepatuhan).
    */
   usageRights?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -528,6 +530,8 @@ export interface PageIntro {
 export interface Document {
   id: number;
   title: string;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -910,6 +914,8 @@ export interface MediaSelect<T extends boolean = true> {
   showInGallery?: T;
   galleryCategory?: T;
   usageRights?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -962,6 +968,8 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface DocumentsSelect<T extends boolean = true> {
   title?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1120,6 +1128,10 @@ export interface SiteSetting {
    * F-14: show the contact / availability forms.
    */
   contactFormEnabled?: boolean | null;
+  /**
+   * F-14: PIC email address(es) that receive new form messages, separated by commas. Empty = the contact email above. During development: vendor test email only.
+   */
+  inquiryRecipients?: string | null;
   /**
    * F-15: all contact data above is final and approved.
    */
@@ -1310,6 +1322,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   accessibility?: T;
   menuPdf?: T;
   contactFormEnabled?: T;
+  inquiryRecipients?: T;
   verified?: T;
   updatedAt?: T;
   createdAt?: T;

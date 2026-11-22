@@ -12,12 +12,14 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { whatsappUrl } from '@/lib/whatsapp'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const head = await getPageHead('contact', await localeFromParams(params))
-  return { title: head.title, description: head.intro || head.tagline }
+  const locale = await localeFromParams(params)
+  const head = await getPageHead('contact', locale)
+  return pageMetadata({ key: 'contact', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
 }
 
 const displayNumber = (digits: string) => `+${digits.replace(/^(\d{2})(\d{3})(\d{4})(\d+)$/, '$1 $2-$3-$4')}`

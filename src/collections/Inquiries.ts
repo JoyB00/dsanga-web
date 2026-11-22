@@ -1,6 +1,7 @@
 import { APIError, type CollectionConfig } from 'payload'
 
 import { hasRole } from '../access/roles'
+import { notifyInquiry } from '../hooks/notifyInquiry'
 
 /** F-14: contact / availability form submissions. Public create, staff read. */
 export const Inquiries: CollectionConfig = {
@@ -13,6 +14,7 @@ export const Inquiries: CollectionConfig = {
     delete: ({ req }) => hasRole(req.user, 'super-admin'),
   },
   hooks: {
+    afterChange: [notifyInquiry],
     beforeValidate: [
       async ({ data, req, operation }) => {
         if (operation !== 'create' || req.user) return data

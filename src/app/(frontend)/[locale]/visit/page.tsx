@@ -7,20 +7,23 @@ import { InfoCard } from '@/components/ui/InfoCard'
 import { PageHeader } from '@/components/ui/PageHero'
 import { Section } from '@/components/ui/Section'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
+import { LocalBusinessJsonLd } from '@/components/LocalBusinessJsonLd'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getFaqs } from '@/lib/queries'
 import type { Faq } from '@/payload-types'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
 const TOPIC_ORDER: Faq['topic'][] = ['general', 'visit', 'pool', 'dining', 'work', 'events']
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const head = await getPageHead('visit', await localeFromParams(params))
-  return { title: head.title, description: head.intro || head.tagline }
+  const locale = await localeFromParams(params)
+  const head = await getPageHead('visit', locale)
+  return pageMetadata({ key: 'visit', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
 }
 
 export default async function VisitPage({ params }: Props) {
@@ -35,6 +38,7 @@ export default async function VisitPage({ params }: Props) {
 
   return (
     <>
+      <LocalBusinessJsonLd locale={locale} settings={settings} description={head.intro} image={head.image} />
       <PageHeader
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}

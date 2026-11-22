@@ -23,12 +23,14 @@ import { CmsImage } from '@/components/ui/CmsImage'
 import { FaqList } from '@/components/ui/FaqList'
 import { Section } from '@/components/ui/Section'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
+import { LocalBusinessJsonLd } from '@/components/LocalBusinessJsonLd'
 import { href, isLocale, type Locale, type RouteKey } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { formatDate, formatRupiah, formatTime } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { iconFor } from '@/lib/icons'
 import { getActiveOffers, getExperiences, getFaqs, getGalleryMedia, getHomePage, getUpcomingEvents } from '@/lib/queries'
+import { pageMetadata, SITE_NAME } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -51,10 +53,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await resolve(params)
   const t = getDictionary(locale)
   const home = await getHomePage(locale)
-  return {
-    title: { absolute: `D’Sanga Pool, Bistro & Space — ${home?.hero?.title || t.home.title}` },
+  return pageMetadata({
+    key: 'home',
+    locale,
+    title: `${SITE_NAME} — ${home?.hero?.title || t.home.title}`,
+    absoluteTitle: true,
     description: home?.hero?.intro || t.home.intro,
-  }
+    image: home?.hero?.image,
+  })
 }
 
 export default async function HomePage({ params }: Props) {
@@ -105,6 +111,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
+      <LocalBusinessJsonLd locale={locale} settings={settings} description={copy.intro} image={copy.heroImage} />
       {/* 2 · Hero */}
       <section className="pt-8 pb-12 md:pt-12 md:pb-16">
         <div className="container-content grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
