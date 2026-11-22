@@ -8,6 +8,7 @@ import { RichText } from '@/components/ui/RichText'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { formatDate, formatRupiah } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getActiveOffers } from '@/lib/queries'
@@ -15,13 +16,14 @@ import { getActiveOffers } from '@/lib/queries'
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.offers.title, description: t.offers.intro }
+  const head = await getPageHead('offers', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 export default async function OffersPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('offers', locale)
   // Only offers inside their validity window are returned (access rules, F-13).
   const [offers, settings] = await Promise.all([getActiveOffers(locale, 24), getSiteSettings(locale).catch(() => null)])
   const wa = settings?.whatsappNumber
@@ -29,9 +31,9 @@ export default async function OffersPage({ params }: Props) {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.offers.title }]}
-        title={t.offers.title}
-        intro={t.offers.intro}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        intro={head.intro}
       />
 
       <section className="pb-section-mobile md:pb-section">

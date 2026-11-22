@@ -15,9 +15,41 @@ import { Inquiries } from './collections/Inquiries'
 import { Media } from './collections/Media'
 import { MenuItems } from './collections/MenuItems'
 import { Offers } from './collections/Offers'
+import { PageIntros } from './collections/PageIntros'
 import { Users } from './collections/Users'
 import { VenuePackages } from './collections/VenuePackages'
+import { AboutPage } from './globals/AboutPage'
+import { HomePage } from './globals/HomePage'
+import { PrivacyPage } from './globals/PrivacyPage'
 import { SiteSettings } from './globals/SiteSettings'
+import { requireBothLocales, requireBothLocalesGlobal } from './hooks/requireBothLocales'
+import { withRevalidate, withRevalidateGlobal } from './hooks/revalidate'
+import type { CollectionConfig, GlobalConfig } from 'payload'
+
+/** F-08: required text that must exist in both languages before publishing. */
+const withBilingualPublish = (config: CollectionConfig, fields: string[]): CollectionConfig => ({
+  ...config,
+  hooks: { ...config.hooks, beforeChange: [...(config.hooks?.beforeChange ?? []), requireBothLocales(fields)] },
+})
+const withBilingualGlobal = (config: GlobalConfig, fields: string[]): GlobalConfig => ({
+  ...config,
+  hooks: { ...config.hooks, beforeChange: [...(config.hooks?.beforeChange ?? []), requireBothLocalesGlobal(fields)] },
+})
+
+/** Public content: bilingual publish check (where not built in) + on-demand page refresh. */
+const contentCollections = [
+  withBilingualPublish(Experiences, ['title', 'facilities.*.label', 'prices.*.label']),
+  withBilingualPublish(MenuItems, ['name']),
+  withBilingualPublish(Events, ['title']),
+  withBilingualPublish(Offers, ['title']),
+  withBilingualPublish(VenuePackages, ['name', 'inclusions.*.label']),
+  withBilingualPublish(Faqs, ['question', 'answer']),
+  PageIntros,
+  Media,
+  Documents,
+].map(withRevalidate)
+
+const contentGlobals = [withBilingualGlobal(SiteSettings, ['address']), HomePage, AboutPage, PrivacyPage].map(withRevalidateGlobal)
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,8 +74,8 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: false,
   },
-  collections: [Experiences, MenuItems, Events, Offers, VenuePackages, Faqs, Media, Documents, Inquiries, Users, AuditLogs],
-  globals: [SiteSettings],
+  collections: [...contentCollections, Inquiries, Users, AuditLogs],
+  globals: contentGlobals,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

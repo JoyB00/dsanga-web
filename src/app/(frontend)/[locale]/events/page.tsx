@@ -8,6 +8,7 @@ import { Section } from '@/components/ui/Section'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { formatDate, formatRupiah, formatTime } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getPastEvents, getUpcomingEvents, getVenuePackages } from '@/lib/queries'
@@ -15,13 +16,14 @@ import { getPastEvents, getUpcomingEvents, getVenuePackages } from '@/lib/querie
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.events.title, description: t.events.intro }
+  const head = await getPageHead('events', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 export default async function EventsPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('events', locale)
   const [upcoming, past, packages, settings] = await Promise.all([
     getUpcomingEvents(locale, 20),
     getPastEvents(locale, 8),
@@ -33,10 +35,11 @@ export default async function EventsPage({ params }: Props) {
   return (
     <>
       <PageHero
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.events.title }]}
-        title={t.events.title}
-        tagline={t.events.tagline}
-        intro={t.events.intro}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        tagline={head.tagline}
+        intro={head.intro}
+        image={head.image}
         imagePlaceholder={t.events.heroPlaceholder}
         actions={
           <>

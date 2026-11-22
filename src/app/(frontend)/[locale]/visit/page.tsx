@@ -9,6 +9,7 @@ import { Section } from '@/components/ui/Section'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getFaqs } from '@/lib/queries'
 import type { Faq } from '@/payload-types'
@@ -18,13 +19,14 @@ type Props = { params: Promise<{ locale: string }> }
 const TOPIC_ORDER: Faq['topic'][] = ['general', 'visit', 'pool', 'dining', 'work', 'events']
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.visit.title, description: t.visit.tagline }
+  const head = await getPageHead('visit', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 export default async function VisitPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('visit', locale)
   const [settings, faqs] = await Promise.all([getSiteSettings(locale).catch(() => null), getFaqs(locale)])
   const wa = settings?.whatsappNumber
   const faqGroups = TOPIC_ORDER.map((topic) => ({ topic, items: faqs.filter((f) => f.topic === topic) })).filter(
@@ -34,9 +36,9 @@ export default async function VisitPage({ params }: Props) {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.visit.title }]}
-        title={t.visit.title}
-        tagline={t.visit.tagline}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        tagline={head.tagline}
       />
 
       {/* Map + address card */}

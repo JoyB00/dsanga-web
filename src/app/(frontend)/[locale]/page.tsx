@@ -27,7 +27,8 @@ import { href, isLocale, type Locale, type RouteKey } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { formatDate, formatRupiah, formatTime } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
-import { getActiveOffers, getExperiences, getFaqs, getGalleryMedia, getUpcomingEvents } from '@/lib/queries'
+import { iconFor } from '@/lib/icons'
+import { getActiveOffers, getExperiences, getFaqs, getGalleryMedia, getHomePage, getUpcomingEvents } from '@/lib/queries'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -47,15 +48,21 @@ const resolve = async (params: Props['params']): Promise<Locale> => {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await resolve(params))
-  return { title: { absolute: `D’Sanga Pool, Bistro & Space — ${t.home.title}` }, description: t.home.intro }
+  const locale = await resolve(params)
+  const t = getDictionary(locale)
+  const home = await getHomePage(locale)
+  return {
+    title: { absolute: `D’Sanga Pool, Bistro & Space — ${home?.hero?.title || t.home.title}` },
+    description: home?.hero?.intro || t.home.intro,
+  }
 }
 
 export default async function HomePage({ params }: Props) {
   const locale = await resolve(params)
   const t = getDictionary(locale)
 
-  const [settings, experiences, offers, events, gallery, faqs] = await Promise.all([
+  const [home, settings, experiences, offers, events, gallery, faqs] = await Promise.all([
+    getHomePage(locale),
     getSiteSettings(locale).catch(() => null),
     getExperiences(locale),
     getActiveOffers(locale, 2),
@@ -67,12 +74,34 @@ export default async function HomePage({ params }: Props) {
   // Home shows the six experiences from spec §5; other activities live on the Activities page.
   const homeExperiences = experiences.filter((exp) => exp.key in EXPERIENCE_TARGETS)
   const highlights = [...offers.map((o) => ({ kind: 'offer' as const, doc: o })), ...events.map((e) => ({ kind: 'event' as const, doc: e }))].slice(0, 3)
-  const values = [
-    { icon: Leaf, label: t.home.values.nature },
-    { icon: Users, label: t.home.values.family },
-    { icon: CalendarDays, label: t.home.values.community },
-    { icon: House, label: t.home.values.culture },
-  ]
+  // Editable copy from the CMS (Home page global); built-in text is only a fallback for empty fields.
+  const copy = {
+    eyebrow: home?.hero?.eyebrow || t.home.eyebrow,
+    title: home?.hero?.title || t.home.title,
+    intro: home?.hero?.intro || t.home.intro,
+    heroImage: home?.hero?.image,
+    experiencesEyebrow: home?.experiences?.eyebrow || t.home.experiencesEyebrow,
+    experiencesTitle: home?.experiences?.title || t.home.experiencesTitle,
+    experiencesIntro: home?.experiences?.intro || t.home.experiencesIntro,
+    offersEyebrow: home?.highlights?.eyebrow || t.home.offersEyebrow,
+    offersTitle: home?.highlights?.title || t.home.offersTitle,
+    aboutEyebrow: home?.about?.eyebrow || t.home.aboutEyebrow,
+    aboutTitle: home?.about?.title || t.home.aboutTitle,
+    aboutText: home?.about?.text || t.home.aboutText,
+    aboutImage: home?.about?.image,
+    galleryEyebrow: home?.gallery?.eyebrow || t.home.galleryEyebrow,
+    galleryTitle: home?.gallery?.title || t.home.galleryTitle,
+    visitEyebrow: home?.visit?.eyebrow || t.home.visitEyebrow,
+    visitTitle: home?.visit?.title || t.home.visitTitle,
+  }
+  const values = home?.about?.values?.length
+    ? home.about.values.map((v) => ({ icon: iconFor(v.icon), label: v.label }))
+    : [
+        { icon: Leaf, label: t.home.values.nature },
+        { icon: Users, label: t.home.values.family },
+        { icon: CalendarDays, label: t.home.values.community },
+        { icon: House, label: t.home.values.culture },
+      ]
 
   return (
     <>
@@ -80,9 +109,9 @@ export default async function HomePage({ params }: Props) {
       <section className="pt-8 pb-12 md:pt-12 md:pb-16">
         <div className="container-content grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
           <div className="flex flex-col items-start gap-5">
-            <span className="eyebrow">{t.home.eyebrow}</span>
-            <h1>{t.home.title}</h1>
-            <p className="max-w-xl text-body-lg text-muted-foreground">{t.home.intro}</p>
+            <span className="eyebrow">{copy.eyebrow}</span>
+            <h1>{copy.title}</h1>
+            <p className="max-w-xl text-body-lg text-muted-foreground">{copy.intro}</p>
             <div className="flex flex-wrap gap-3">
               <a href="#experiences" className="btn-primary">
                 {t.cta.explore}
@@ -91,12 +120,19 @@ export default async function HomePage({ params }: Props) {
               <WhatsAppButton number={wa} locale={locale} label={t.cta.contactUs} variant="outline" />
             </div>
           </div>
-          <CmsImage placeholder={t.home.heroPlaceholder} priority size="hero" className="aspect-[4/3] w-full rounded-media" />
+          <CmsImage
+            media={copy.heroImage}
+            placeholder={t.home.heroPlaceholder}
+            priority
+            size="hero"
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            className="aspect-[4/3] w-full rounded-media"
+          />
         </div>
       </section>
 
       {/* 3 · Experience icon row */}
-      <section id="experiences" aria-label={t.home.experiencesEyebrow} className="border-y border-border bg-surface">
+      <section id="experiences" aria-label={copy.experiencesEyebrow} className="border-y border-border bg-surface">
         <ul className="container-content grid grid-cols-3 gap-2 py-8 lg:grid-cols-6">
           {homeExperiences.map((exp) => {
             const target = EXPERIENCE_TARGETS[exp.key] ?? { route: 'activities' as const, icon: Leaf }
@@ -122,9 +158,9 @@ export default async function HomePage({ params }: Props) {
 
       {/* 4 · Explore cards */}
       <Section
-        eyebrow={t.home.experiencesEyebrow}
-        title={t.home.experiencesTitle}
-        intro={t.home.experiencesIntro}
+        eyebrow={copy.experiencesEyebrow}
+        title={copy.experiencesTitle}
+        intro={copy.experiencesIntro}
         action={
           <Link href={href('activities', locale)} className="btn-link">
             {t.cta.viewAll} <ArrowRight className="ml-1 size-4" aria-hidden="true" />
@@ -165,8 +201,8 @@ export default async function HomePage({ params }: Props) {
       {highlights.length > 0 && (
         <Section
           alt
-          eyebrow={t.home.offersEyebrow}
-          title={t.home.offersTitle}
+          eyebrow={copy.offersEyebrow}
+          title={copy.offersTitle}
           action={
             <Link href={href('offers', locale)} className="btn-link">
               {t.home.allOffers} <ArrowRight className="ml-1 size-4" aria-hidden="true" />
@@ -211,11 +247,16 @@ export default async function HomePage({ params }: Props) {
       {/* 6 · About */}
       <section className="section">
         <div className="container-content grid items-center gap-10 lg:grid-cols-2">
-          <CmsImage placeholder={t.home.aboutPlaceholder} className="aspect-[4/3] w-full rounded-media" />
+          <CmsImage
+            media={copy.aboutImage}
+            placeholder={t.home.aboutPlaceholder}
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="aspect-[4/3] w-full rounded-media"
+          />
           <div className="flex flex-col gap-5">
-            <span className="eyebrow">{t.home.aboutEyebrow}</span>
-            <h2>{t.home.aboutTitle}</h2>
-            <p className="text-body-lg text-muted-foreground">{t.home.aboutText}</p>
+            <span className="eyebrow">{copy.aboutEyebrow}</span>
+            <h2>{copy.aboutTitle}</h2>
+            <p className="text-body-lg text-muted-foreground">{copy.aboutText}</p>
             <ul className="grid grid-cols-2 gap-4">
               {values.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-3">
@@ -227,7 +268,7 @@ export default async function HomePage({ params }: Props) {
               ))}
             </ul>
             <Link href={href('about', locale)} className="btn-primary self-start">
-              {t.home.aboutEyebrow}
+              {copy.aboutEyebrow}
               <ArrowRight className="size-5" aria-hidden="true" />
             </Link>
           </div>
@@ -238,8 +279,8 @@ export default async function HomePage({ params }: Props) {
       {gallery.length > 0 && (
         <Section
           alt
-          eyebrow={t.home.galleryEyebrow}
-          title={t.home.galleryTitle}
+          eyebrow={copy.galleryEyebrow}
+          title={copy.galleryTitle}
           action={
             <Link href={href('gallery', locale)} className="btn-link">
               {t.home.openGallery} <ArrowRight className="ml-1 size-4" aria-hidden="true" />
@@ -257,11 +298,11 @@ export default async function HomePage({ params }: Props) {
       )}
 
       {/* 8 · Plan your visit */}
-      <Section alt={gallery.length === 0} eyebrow={t.home.visitEyebrow} title={t.home.visitTitle}>
+      <Section alt={gallery.length === 0} eyebrow={copy.visitEyebrow} title={copy.visitTitle}>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           {settings?.mapEmbedUrl ? (
             <iframe
-              title={t.home.visitTitle}
+              title={copy.visitTitle}
               src={settings.mapEmbedUrl}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

@@ -73,6 +73,7 @@ export interface Config {
     offers: Offer;
     'venue-packages': VenuePackage;
     faqs: Faq;
+    'page-intros': PageIntro;
     media: Media;
     documents: Document;
     inquiries: Inquiry;
@@ -91,6 +92,7 @@ export interface Config {
     offers: OffersSelect<false> | OffersSelect<true>;
     'venue-packages': VenuePackagesSelect<false> | VenuePackagesSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
+    'page-intros': PageIntrosSelect<false> | PageIntrosSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
@@ -107,9 +109,15 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'id') | ('en' | 'id')[];
   globals: {
     'site-settings': SiteSetting;
+    'home-page': HomePage;
+    'about-page': AboutPage;
+    'privacy-page': PrivacyPage;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
+    'privacy-page': PrivacyPageSelect<false> | PrivacyPageSelect<true>;
   };
   locale: 'en' | 'id';
   widgets: {
@@ -488,6 +496,30 @@ export interface Faq {
   pic?: string | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "page-intros".
+ */
+export interface PageIntro {
+  id: number;
+  page: 'activities' | 'events' | 'offers' | 'gallery' | 'visit' | 'contact';
+  title: string;
+  tagline?: string | null;
+  intro?: string | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -617,6 +649,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'faqs';
         value: number | Faq;
+      } | null)
+    | ({
+        relationTo: 'page-intros';
+        value: number | PageIntro;
       } | null)
     | ({
         relationTo: 'media';
@@ -846,6 +882,23 @@ export interface FaqsSelect<T extends boolean = true> {
   pic?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "page-intros_select".
+ */
+export interface PageIntrosSelect<T extends boolean = true> {
+  page?: T;
+  title?: T;
+  tagline?: T;
+  intro?: T;
+  heroImage?: T;
+  verified?: T;
+  pic?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1076,6 +1129,157 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  hero: {
+    eyebrow?: string | null;
+    title: string;
+    intro: string;
+    image?: (number | null) | Media;
+  };
+  experiences: {
+    eyebrow?: string | null;
+    title: string;
+    intro?: string | null;
+  };
+  highlights?: {
+    eyebrow?: string | null;
+    title?: string | null;
+  };
+  about: {
+    eyebrow?: string | null;
+    title: string;
+    text?: string | null;
+    image?: (number | null) | Media;
+    values?:
+      | {
+          label: string;
+          icon?:
+            ('leaf' | 'users' | 'house' | 'calendar' | 'heart' | 'waves' | 'utensils' | 'coffee' | 'sparkles') | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  gallery?: {
+    eyebrow?: string | null;
+    title?: string | null;
+  };
+  visit?: {
+    eyebrow?: string | null;
+    title?: string | null;
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page".
+ */
+export interface AboutPage {
+  id: number;
+  hero: {
+    title: string;
+    tagline?: string | null;
+    intro?: string | null;
+    image?: (number | null) | Media;
+  };
+  story: {
+    eyebrow?: string | null;
+    title: string;
+    body: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    };
+  };
+  managed?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    text?: string | null;
+  };
+  purpose?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  values?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    items?:
+      | {
+          title: string;
+          text?: string | null;
+          icon?:
+            ('leaf' | 'users' | 'house' | 'calendar' | 'heart' | 'waves' | 'utensils' | 'coffee' | 'sparkles') | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  cta?: {
+    title?: string | null;
+    text?: string | null;
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-page".
+ */
+export interface PrivacyPage {
+  id: number;
+  title: string;
+  lastUpdated?: string | null;
+  sections?:
+    | {
+        /**
+         * Short id used in the page link, e.g. "cookies".
+         */
+        anchor: string;
+        title: string;
+        body: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
@@ -1107,6 +1311,148 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   menuPdf?: T;
   contactFormEnabled?: T;
   verified?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        intro?: T;
+        image?: T;
+      };
+  experiences?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        intro?: T;
+      };
+  highlights?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+      };
+  about?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        text?: T;
+        image?: T;
+        values?:
+          | T
+          | {
+              label?: T;
+              icon?: T;
+              id?: T;
+            };
+      };
+  gallery?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+      };
+  visit?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page_select".
+ */
+export interface AboutPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        title?: T;
+        tagline?: T;
+        intro?: T;
+        image?: T;
+      };
+  story?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        body?: T;
+      };
+  managed?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        text?: T;
+      };
+  purpose?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  values?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        items?:
+          | T
+          | {
+              title?: T;
+              text?: T;
+              icon?: T;
+              id?: T;
+            };
+      };
+  cta?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-page_select".
+ */
+export interface PrivacyPageSelect<T extends boolean = true> {
+  title?: T;
+  lastUpdated?: T;
+  sections?:
+    | T
+    | {
+        anchor?: T;
+        title?: T;
+        body?: T;
+        id?: T;
+      };
+  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

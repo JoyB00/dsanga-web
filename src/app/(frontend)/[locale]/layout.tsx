@@ -16,9 +16,10 @@ export const metadata: Metadata = {
   description: 'Pool, bistro, working space, playground and community events in Sukawati, Bali.',
 }
 
-// Pages are prerendered, then refreshed from the CMS at most every 60 seconds.
-// (On-demand revalidation from Payload hooks can replace this later.)
-export const revalidate = 60
+// Pages are prerendered. Publishing in the CMS refreshes them immediately (hooks/revalidate.ts);
+// this 5-minute fallback also catches time-based changes nobody edits, such as offers and
+// events passing their dates (F-13).
+export const revalidate = 300
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }))

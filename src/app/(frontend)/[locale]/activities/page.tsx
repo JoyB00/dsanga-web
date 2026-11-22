@@ -10,29 +10,32 @@ import { Section } from '@/components/ui/Section'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getActivities } from '@/lib/queries'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.activities.title, description: t.activities.intro }
+  const head = await getPageHead('activities', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 export default async function ActivitiesPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('activities', locale)
   const [activities, settings] = await Promise.all([getActivities(locale), getSiteSettings(locale).catch(() => null)])
   const wa = settings?.whatsappNumber
 
   return (
     <>
       <PageHero
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.activities.title }]}
-        title={t.activities.title}
-        tagline={t.activities.tagline}
-        intro={t.activities.intro}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        tagline={head.tagline}
+        intro={head.intro}
+        image={head.image}
         imagePlaceholder={t.activities.heroPlaceholder}
         actions={
           <a href="#all" className="btn-primary">

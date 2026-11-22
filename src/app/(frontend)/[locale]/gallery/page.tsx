@@ -4,19 +4,21 @@ import { GalleryGrid, type GalleryItem } from '@/components/ui/GalleryGrid'
 import { PageHeader } from '@/components/ui/PageHero'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { mediaSrc } from '@/lib/media'
 import { getGalleryMedia } from '@/lib/queries'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.gallery.title, description: t.gallery.intro }
+  const head = await getPageHead('gallery', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 export default async function GalleryPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('gallery', locale)
   const media = await getGalleryMedia(locale, 120)
 
   const items: GalleryItem[] = media
@@ -33,9 +35,9 @@ export default async function GalleryPage({ params }: Props) {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.gallery.title }]}
-        title={t.gallery.title}
-        intro={t.gallery.intro}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        intro={head.intro}
       />
       <section className="pb-section-mobile md:pb-section">
         <div className="container-content">

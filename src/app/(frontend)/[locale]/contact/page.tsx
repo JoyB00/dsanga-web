@@ -9,14 +9,15 @@ import { SocialIcon } from '@/components/ui/SocialIcon'
 import { WhatsAppNotice } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { whatsappUrl } from '@/lib/whatsapp'
 
 type Props = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = getDictionary(await localeFromParams(params))
-  return { title: t.contact.title, description: t.contact.intro }
+  const head = await getPageHead('contact', await localeFromParams(params))
+  return { title: head.title, description: head.intro || head.tagline }
 }
 
 const displayNumber = (digits: string) => `+${digits.replace(/^(\d{2})(\d{3})(\d{4})(\d+)$/, '$1 $2-$3-$4')}`
@@ -24,6 +25,7 @@ const displayNumber = (digits: string) => `+${digits.replace(/^(\d{2})(\d{3})(\d
 export default async function ContactPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
+  const head = await getPageHead('contact', locale)
   const settings = await getSiteSettings(locale).catch(() => null)
 
   const waDigits = (settings?.whatsappNumber ?? '').replace(/\D/g, '')
@@ -35,9 +37,9 @@ export default async function ContactPage({ params }: Props) {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.contact.title }]}
-        title={t.contact.title}
-        intro={t.contact.intro}
+        crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
+        title={head.title}
+        intro={head.intro}
       />
 
       <section className="pb-section-mobile md:pb-section">

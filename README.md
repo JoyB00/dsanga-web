@@ -47,10 +47,11 @@ src/
   proxy.ts                     Language routing: EN default without prefix, ID under /id with ID slugs
   i18n/config.ts               Route slugs per language + href() helper
   i18n/dictionaries.ts         UI strings / CTA labels (EN + ID)
-  collections/                 Experiences, MenuItems, Events, Offers, VenuePackages, Faqs, Media, Inquiries, Users, AuditLogs
-  globals/SiteSettings.ts      WhatsApp number, contact, address, opening hours, form switch
+  collections/                 Experiences, MenuItems, Events, Offers, VenuePackages, Faqs, PageIntros, Media, Documents, Inquiries, Users, AuditLogs
+  globals/                     SiteSettings (WhatsApp, contact, hours, form switch) + HomePage, AboutPage, PrivacyPage
   access/roles.ts              Roles and permission helpers (spec §7)
-  hooks/                       restrictPublish (F-11), auditLog (F-12)
+  hooks/                       restrictPublish (F-11), auditLog (F-12), requireBothLocales (F-08), revalidate
+  lib/queries.ts               All CMS reads for the public pages (published, per language, no fallback)
   lib/whatsapp.ts              Pre-filled WhatsApp links per language (F-03)
   seed/index.ts                Temporary data
 ```
@@ -60,6 +61,8 @@ src/
 | Spec | Where |
 |---|---|
 | F-08 bilingual, EN default | `localization` in `payload.config.ts` (fallback off) + `proxy.ts` + `i18n/` |
+| F-08 publish check | `hooks/requireBothLocales.ts`: publishing is refused until required text exists in English **and** Indonesian (drafts can be saved anytime). Fields per collection are listed in `payload.config.ts` |
+| Editable page copy | Globals **Home page**, **About page**, **Privacy policy** and the **Page headers** collection (Activities, Events, Offers, Gallery, Visit Us, Contact). `i18n/dictionaries.ts` holds UI labels and fallbacks only |
 | §7 roles | `access/roles.ts`, `Users.role`: Super Admin Desa, Approver, Admin Konten, Admin Produk, Viewer |
 | F-01 drafts / versions | `versions.drafts` on content collections |
 | F-11 approval | `hooks/restrictPublish.ts`: admins can save drafts; only Approver / Super Admin can publish experiences, menu, offers and venue packages |
@@ -73,11 +76,12 @@ src/
 ## Notes
 
 - **Locale in API calls:** REST/GraphQL writes should pass `?locale=en` or `?locale=id`. The admin panel does this automatically.
-- **Caching:** public pages are prerendered and revalidate every 60 seconds (`revalidate` in the locale layout).
+- **Caching:** public pages are prerendered. Publishing in the CMS refreshes them on the next visit (`hooks/revalidate.ts`; the route pattern must include the `(frontend)` group). A 5-minute `revalidate` in the locale layout catches date-based changes such as expiring offers.
+- **Hooks and `req`:** never pass `req` to a Local API call that sets a different `locale`: Payload switches `req.locale`, and the rest of the save then writes into the other language (see `requireBothLocales.ts`).
 - **WhatsApp:** set a **vendor test number** (never a random number) in `SEED_WHATSAPP_NUMBER` or in Site settings.
 - **Production database:** dev uses Payload's automatic schema push. Before the first deploy, create migrations (`pnpm payload migrate:create`) and run `pnpm payload migrate` on the server.
 
 ## Not done yet
 
-- Page bodies from the wireframes: Home is partly built; the other 11 pages are placeholders.
-- Object storage for media (Cloudflare R2 via `@payloadcms/storage-s3`), email adapter, analytics + cookie consent, sitemap/hreflang tags, on-demand revalidation, and the F-08 check that both languages are filled before publishing.
+- Object storage for media (Cloudflare R2 via `@payloadcms/storage-s3`), email adapter for form notifications, analytics + cookie consent, sitemap/hreflang tags and structured data.
+- F-08 for media alt text: uploads require alt text in the current language only.

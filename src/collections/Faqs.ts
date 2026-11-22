@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, canEditContent } from '../access/roles'
+import { canEditContent } from '../access/roles'
 import { governanceFields } from '../fields/governance'
 import { auditHooks } from '../hooks/auditLog'
 
@@ -10,8 +10,10 @@ export const Faqs: CollectionConfig = {
   labels: { singular: 'FAQ', plural: 'FAQs' },
   admin: { group: 'Content', useAsTitle: 'question', defaultColumns: ['question', 'topic', 'order'] },
   defaultSort: 'order',
+  // Drafts so an FAQ can be written in one language first and published once both exist (F-08).
+  versions: { drafts: true, maxPerDoc: 10 },
   access: {
-    read: anyone,
+    read: ({ req }) => (req.user ? true : { _status: { equals: 'published' } }),
     create: canEditContent,
     update: canEditContent,
     delete: canEditContent,

@@ -9,6 +9,7 @@
 import 'dotenv/config'
 import { getPayload, type CollectionSlug, type Payload, type Where } from 'payload'
 
+import { getDictionary } from '../i18n/dictionaries'
 import config from '../payload.config'
 
 type Data = Record<string, unknown>
@@ -65,6 +66,128 @@ async function upsert(
 /** Re-use array row ids so the Indonesian update fills the same rows. */
 const rows = (doc: Data, field: string, values: Data[]) =>
   ((doc[field] as Data[] | undefined) ?? []).map((row, i) => ({ ...row, ...values[i] }))
+
+/** Rich text with one paragraph per line. */
+const richParagraphs = (lines: string[]) => {
+  const doc = rich(lines[0] ?? '')
+  doc.root.children = lines.map((line) => ({ ...rich(line).root.children[0] }))
+  return doc
+}
+
+/** Page copy: English first (creates array rows), then Indonesian into the same rows. */
+async function seedPages(payload: Payload, log: (m: string) => void) {
+  const en = getDictionary('en')
+  const id = getDictionary('id')
+  const valueIcons = ['leaf', 'users', 'calendar', 'house']
+
+  // Home page
+  const home = (await payload.updateGlobal({
+    slug: 'home-page',
+    locale: 'en',
+    data: {
+      _status: 'published',
+      hero: { eyebrow: en.home.eyebrow, title: en.home.title, intro: en.home.intro },
+      experiences: { eyebrow: en.home.experiencesEyebrow, title: en.home.experiencesTitle, intro: en.home.experiencesIntro },
+      highlights: { eyebrow: en.home.offersEyebrow, title: en.home.offersTitle },
+      about: {
+        eyebrow: en.home.aboutEyebrow,
+        title: en.home.aboutTitle,
+        text: en.home.aboutText,
+        values: Object.values(en.home.values).map((label, i) => ({ label, icon: valueIcons[i] })),
+      },
+      gallery: { eyebrow: en.home.galleryEyebrow, title: en.home.galleryTitle },
+      visit: { eyebrow: en.home.visitEyebrow, title: en.home.visitTitle },
+    } as never,
+  })) as unknown as { about: Data }
+  await payload.updateGlobal({
+    slug: 'home-page',
+    locale: 'id',
+    data: {
+      _status: 'published',
+      hero: { eyebrow: id.home.eyebrow, title: id.home.title, intro: id.home.intro },
+      experiences: { eyebrow: id.home.experiencesEyebrow, title: id.home.experiencesTitle, intro: id.home.experiencesIntro },
+      highlights: { eyebrow: id.home.offersEyebrow, title: id.home.offersTitle },
+      about: {
+        eyebrow: id.home.aboutEyebrow,
+        title: id.home.aboutTitle,
+        text: id.home.aboutText,
+        values: rows(home.about, 'values', Object.values(id.home.values).map((label) => ({ label }))),
+      },
+      gallery: { eyebrow: id.home.galleryEyebrow, title: id.home.galleryTitle },
+      visit: { eyebrow: id.home.visitEyebrow, title: id.home.visitTitle },
+    } as never,
+  })
+
+  // About page
+  const aboutData = (t: typeof en) => ({
+    _status: 'published',
+    hero: { title: t.about.title, tagline: t.about.tagline, intro: t.about.intro },
+    story: { eyebrow: t.about.storyEyebrow, title: t.about.storyTitle, body: richParagraphs(t.about.story) },
+    managed: { eyebrow: t.about.managedEyebrow, title: t.about.managedTitle, text: t.about.managedText },
+    cta: { title: t.about.ctaTitle, text: t.about.ctaText },
+  })
+  const about = (await payload.updateGlobal({
+    slug: 'about-page',
+    locale: 'en',
+    data: {
+      ...aboutData(en),
+      purpose: { eyebrow: en.about.purposeEyebrow, title: en.about.purposeTitle, items: en.about.purpose.map((text) => ({ text })) },
+      values: {
+        eyebrow: en.about.valuesEyebrow,
+        title: en.about.valuesTitle,
+        items: en.about.values.map((v, i) => ({ title: v.title, text: v.text, icon: ['leaf', 'users', 'house', 'calendar'][i] })),
+      },
+    } as never,
+  })) as unknown as { purpose: Data; values: Data }
+  await payload.updateGlobal({
+    slug: 'about-page',
+    locale: 'id',
+    data: {
+      ...aboutData(id),
+      purpose: { eyebrow: id.about.purposeEyebrow, title: id.about.purposeTitle, items: rows(about.purpose, 'items', id.about.purpose.map((text) => ({ text }))) },
+      values: {
+        eyebrow: id.about.valuesEyebrow,
+        title: id.about.valuesTitle,
+        items: rows(about.values, 'items', id.about.values.map((v) => ({ title: v.title, text: v.text }))),
+      },
+    } as never,
+  })
+
+  // Privacy policy (temporary text, spec §14)
+  const privacy = (await payload.updateGlobal({
+    slug: 'privacy-page',
+    locale: 'en',
+    data: {
+      _status: 'published',
+      title: en.privacy.title,
+      lastUpdated: new Date().toISOString(),
+      sections: en.privacy.sections.map((s) => ({ anchor: s.id, title: s.title, body: richParagraphs(s.body) })),
+    } as never,
+  })) as unknown as Data
+  await payload.updateGlobal({
+    slug: 'privacy-page',
+    locale: 'id',
+    data: {
+      _status: 'published',
+      title: id.privacy.title,
+      sections: rows(privacy, 'sections', id.privacy.sections.map((s) => ({ title: s.title, body: richParagraphs(s.body) }))),
+    } as never,
+  })
+
+  // Page headers
+  const intros = [
+    { page: 'activities', en: { title: en.activities.title, tagline: en.activities.tagline, intro: en.activities.intro }, id: { title: id.activities.title, tagline: id.activities.tagline, intro: id.activities.intro } },
+    { page: 'events', en: { title: en.events.title, tagline: en.events.tagline, intro: en.events.intro }, id: { title: id.events.title, tagline: id.events.tagline, intro: id.events.intro } },
+    { page: 'offers', en: { title: en.offers.title, intro: en.offers.intro }, id: { title: id.offers.title, intro: id.offers.intro } },
+    { page: 'gallery', en: { title: en.gallery.title, intro: en.gallery.intro }, id: { title: id.gallery.title, intro: id.gallery.intro } },
+    { page: 'visit', en: { title: en.visit.title, tagline: en.visit.tagline }, id: { title: id.visit.title, tagline: id.visit.tagline } },
+    { page: 'contact', en: { title: en.contact.title, intro: en.contact.intro }, id: { title: id.contact.title, intro: id.contact.intro } },
+  ]
+  for (const intro of intros) {
+    await upsert(payload, 'page-intros', { page: { equals: intro.page } }, { page: intro.page, ...intro.en, verified: false, _status: 'published' }, () => ({ ...intro.id, _status: 'published' }))
+  }
+  log(`page copy: home, about, privacy + ${intros.length} page headers`)
+}
 
 async function seed() {
   const payload = await getPayload({ config })
@@ -131,6 +254,8 @@ async function seed() {
     },
   })
   log('site settings')
+
+  await seedPages(payload, log)
 
   // ── Experiences ──────────────────────────────────────────────────────────────
   const experiences: { en: Data; id: (d: Data) => Data }[] = [
@@ -347,7 +472,7 @@ async function seed() {
     [{ topic: 'dining', question: 'Do you have vegetarian options?', answer: 'Yes, several dishes are vegetarian. Ask our staff about allergies.' }, { question: 'Apakah ada pilihan vegetarian?', answer: 'Ada, beberapa hidangan vegetarian. Tanyakan alergi kepada petugas kami.' }],
   ]
   for (const [i, [en, id]] of faqs.entries()) {
-    await upsert(payload, 'faqs', { question: { equals: en.question } }, { ...en, order: i, verified: false }, () => id)
+    await upsert(payload, 'faqs', { question: { equals: en.question } }, { ...en, order: i, verified: false, _status: 'published' }, () => id)
   }
   log(`${faqs.length} FAQs`)
 

@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import type { Locale } from '../i18n/config'
+import type { PageIntroKey } from '../collections/PageIntros'
 import type { Faq } from '../payload-types'
 import { getPayloadClient } from './payload'
 
@@ -9,6 +10,27 @@ import { getPayloadClient } from './payload'
  * visitor: published only, hidden experiences and expired offers excluded (F-13).
  */
 const base = (locale: Locale) => ({ locale, fallbackLocale: false as const, overrideAccess: false, depth: 1 })
+
+const getGlobal = async <S extends 'home-page' | 'about-page' | 'privacy-page'>(slug: S, locale: Locale) => {
+  const payload = await getPayloadClient()
+  return payload.findGlobal({ slug, locale, fallbackLocale: false, depth: 1, draft: false }).catch(() => null)
+}
+
+export const getHomePage = cache((locale: Locale) => getGlobal('home-page', locale))
+export const getAboutPage = cache((locale: Locale) => getGlobal('about-page', locale))
+export const getPrivacyPage = cache((locale: Locale) => getGlobal('privacy-page', locale))
+
+/** Header copy for Activities, Events, Offers, Gallery, Visit Us and Contact. */
+export const getPageIntro = cache(async (page: PageIntroKey, locale: Locale) => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'page-intros',
+    ...base(locale),
+    where: { page: { equals: page } },
+    limit: 1,
+  })
+  return docs[0] ?? null
+})
 
 export const getExperiences = cache(async (locale: Locale) => {
   const payload = await getPayloadClient()
