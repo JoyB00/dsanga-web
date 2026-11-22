@@ -103,16 +103,37 @@ test.describe('Mobile (375 px)', () => {
     expect(wide).toEqual([])
   })
 
-  test('menu opens and lists the pages', async ({ page }) => {
+  test('menu opens, lists the pages and closes with Escape (layout v2 §4.1)', async ({ page }) => {
     await page.goto(BASE)
-    // The mobile menu is a native <details> disclosure.
-    await page.locator('header summary', { hasText: 'Menu' }).click()
-    await expect(page.getByRole('link', { name: 'Contact' }).first()).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Gallery' }).first()).toBeVisible()
+    const button = page.locator('header button[aria-controls="mobile-menu"]')
+    await expect(button).toHaveAccessibleName('Open menu')
+    await button.click()
+    await expect(button).toHaveAttribute('aria-expanded', 'true')
+    const panel = page.locator('#mobile-menu')
+    await expect(panel.getByRole('link', { name: 'Contact' })).toBeVisible()
+    await expect(panel.getByRole('link', { name: 'Gallery' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(panel).toBeHidden()
+    await expect(button).toBeFocused()
+    await expect(button).toHaveAccessibleName('Open menu')
   })
 })
 
 test.describe('Interactions', () => {
+  test('experience filters narrow the catalog and announce the count (layout v2 §4.5)', async ({ page }) => {
+    await page.goto(BASE)
+    const catalog = page.locator('#experiences')
+    const cards = catalog.locator('ul.grid > li')
+    const total = await cards.count()
+    const pool = catalog.getByRole('button', { name: /^Pool \(\d+\)$/ })
+    await pool.click()
+    await expect(pool).toHaveAttribute('aria-pressed', 'true')
+    const shown = await cards.count()
+    expect(shown).toBeGreaterThan(0)
+    expect(shown).toBeLessThan(total)
+    await expect(catalog.locator('[aria-live]')).toHaveText(`${shown} shown`)
+  })
+
   test('FAQ answers open and close (F-10)', async ({ page }) => {
     await page.goto(`${BASE}/visit`)
     const item = page.locator('main details').first()

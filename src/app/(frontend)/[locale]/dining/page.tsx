@@ -1,24 +1,31 @@
-import { Clock, Coffee, Download, Trees, UtensilsCrossed } from 'lucide-react'
 import type { Metadata } from 'next'
+import { Clock, Coffee, Download, Trees, UtensilsCrossed } from 'lucide-react'
 
 import { CmsImage } from '@/components/ui/CmsImage'
-import { CtaBand } from '@/components/ui/CtaBand'
 import { MenuTabs, type MenuCategory } from '@/components/ui/MenuTabs'
-import { PageHero } from '@/components/ui/PageHero'
-import { Section } from '@/components/ui/Section'
-import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { formatRupiah } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getMenuItems } from '@/lib/queries'
-import type { MenuItem } from '@/payload-types'
-import { pageMetadata } from '@/lib/seo'
 import { temp } from '@/lib/verification'
+import type { MenuItem } from '@/payload-types'
+
+const CATEGORY_ORDER: MenuItem['category'][] = [
+  'mains',
+  'snacks',
+  'kids',
+  'coffee',
+  'drinks',
+  'desserts',
+]
+import { PageHero } from '@/components/ui/PageHero'
+import { Eyebrow, Section, SectionHeader } from '@/components/ui/Section'
+import { CtaBand } from '@/components/ui/CtaBand'
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
+import { pageMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
-
-const CATEGORY_ORDER: MenuItem['category'][] = ['mains', 'snacks', 'kids', 'coffee', 'drinks', 'desserts']
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
@@ -35,6 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   })
 }
 
+/**
+ * Bistro & Coffee (spec-layout-v2 §6.2): highlights over the hero edge, favourites as photo cards with the
+ * price below (not over the photo, so prices stay easy to read), menu tabs, coffee on dark, ambience, CTA.
+ */
 export default async function DiningPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
@@ -63,7 +74,8 @@ export default async function DiningPage({ params }: Props) {
         marker: temp(item),
       })),
   })).filter((cat) => cat.items.length > 0)
-  const menuPdf = typeof settings?.menuPdf === 'object' && settings.menuPdf ? settings.menuPdf : null
+  const menuPdf =
+    typeof settings?.menuPdf === 'object' && settings.menuPdf ? settings.menuPdf : null
   const hours = dining?.hours?.weekday
 
   const highlights = [
@@ -82,23 +94,34 @@ export default async function DiningPage({ params }: Props) {
         tagline={dining?.tagline}
         intro={dining?.summary}
         image={dining?.heroImage}
-        imagePlaceholder={t.dining.heroPlaceholder}
         actions={
           <>
-            <a href="#menu" className="btn-outline">
+            <a href="#menu" className="btn-primary">
               {t.cta.viewMenu}
             </a>
-            <WhatsAppButton number={wa} locale={locale} topic={topic} label={t.cta.bookViaWhatsApp} />
+            <WhatsAppButton
+              number={wa}
+              locale={locale}
+              topic={topic}
+              label={t.cta.bookViaWhatsApp}
+              variant="glass"
+            />
           </>
         }
       />
 
-      <section className="section-alt py-8" aria-label={t.dining.title}>
-        <ul className="container-content grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label={t.dining.title} className="relative z-10 -mt-10">
+        <ul className="container-content grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {highlights.map(({ icon: Icon, title }) => (
-            <li key={title} className="flex items-center gap-3">
-              <span className="icon-circle size-12 bg-surface" aria-hidden="true">
-                <Icon className="size-[22px]" strokeWidth={1.75} />
+            <li
+              key={title}
+              className="flex h-full flex-col items-start gap-2 rounded-card border border-border bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-5"
+            >
+              <span
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-highlight text-primary"
+                aria-hidden="true"
+              >
+                <Icon className="size-5" />
               </span>
               <span className="font-bold text-foreground">{title}</span>
             </li>
@@ -107,18 +130,40 @@ export default async function DiningPage({ params }: Props) {
       </section>
 
       {featured.length > 0 && (
-        <Section eyebrow={t.dining.signatureEyebrow} title={t.dining.signatureTitle}>
+        <Section tone="cream">
+          <SectionHeader eyebrow={t.dining.signatureEyebrow} title={t.dining.signatureTitle} />
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((item) => (
-              <li key={item.id} {...temp(item)} className="card flex flex-col overflow-hidden">
-                <CmsImage media={item.image} placeholder={item.name} className="aspect-[4/3] w-full" sizes="(min-width: 1024px) 25vw, 50vw" />
-                <div className="flex flex-col gap-1.5 p-5">
+              <li
+                key={item.id}
+                {...temp(item)}
+                className="group flex flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card"
+              >
+                <div className="zoom-media overflow-hidden">
+                  <CmsImage
+                    media={item.image}
+                    placeholder={item.name}
+                    className="aspect-[4/3] w-full"
+                    sizes="(min-width: 1024px) 25vw, 50vw"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5 p-5">
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="text-body-lg">{item.name}</h3>
-                    <strong className="whitespace-nowrap text-primary">{formatRupiah(item.price)}</strong>
+                    <h3 className="text-[22px] leading-tight font-bold text-foreground">
+                      {item.name}
+                    </h3>
+                    <strong className="whitespace-nowrap text-primary">
+                      {formatRupiah(item.price)}
+                    </strong>
                   </div>
-                  {item.description && <p className="text-small text-muted-foreground">{item.description}</p>}
-                  {item.dietaryNote && <span className="text-caption text-muted-foreground">{item.dietaryNote}</span>}
+                  {item.description && (
+                    <p className="text-small text-muted-foreground">{item.description}</p>
+                  )}
+                  {item.dietaryNote && (
+                    <span className="mt-auto pt-1 text-caption font-semibold text-accent-text">
+                      {item.dietaryNote}
+                    </span>
+                  )}
                 </div>
               </li>
             ))}
@@ -126,78 +171,114 @@ export default async function DiningPage({ params }: Props) {
         </Section>
       )}
 
-      <Section
-        id="menu"
-        alt
-        eyebrow={t.dining.menuEyebrow}
-        title={t.dining.menuTitle}
-        action={
-          menuPdf?.url ? (
-            <a href={menuPdf.url} className="btn-outline" download>
-              <Download className="size-5" aria-hidden="true" />
-              {t.dining.downloadMenu}
-            </a>
-          ) : undefined
-        }
-      >
+      <Section id="menu" tone="alt">
+        <SectionHeader
+          center={false}
+          eyebrow={t.dining.menuEyebrow}
+          title={t.dining.menuTitle}
+          action={
+            menuPdf?.url ? (
+              <a href={menuPdf.url} className="btn-outline" download>
+                <Download className="size-5" aria-hidden="true" />
+                {t.dining.downloadMenu}
+              </a>
+            ) : undefined
+          }
+        />
         <MenuTabs categories={categories} label={t.dining.menuTitle} />
         <p className="text-small text-muted-foreground">{t.dining.allergyNote}</p>
       </Section>
 
+      {/* Coffee: the page's one dark section */}
       {coffee && (
-        <section id="coffee" className="section scroll-mt-24">
-          <div className="container-content grid items-center gap-10 lg:grid-cols-2">
-            <CmsImage
-              media={coffee.heroImage}
-              placeholder={t.dining.coffeePlaceholder}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="aspect-[4/3] w-full rounded-media"
-            />
-            <div className="flex flex-col gap-5">
-              <span className="eyebrow">{t.dining.coffeeEyebrow}</span>
-              <h2>{coffee.tagline ? `${coffee.title}: ${coffee.tagline}` : coffee.title}</h2>
-              {coffee.summary && <p className="text-body-lg text-muted-foreground">{coffee.summary}</p>}
+        <Section id="coffee" tone="dark">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="group">
+              <div className="zoom-media overflow-hidden rounded-media">
+                <CmsImage
+                  media={coffee.heroImage}
+                  placeholder={t.dining.coffeePlaceholder}
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="aspect-[4/3] w-full"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-5">
+              <Eyebrow dark>{t.dining.coffeeEyebrow}</Eyebrow>
+              <h2 className="text-[34px] leading-[1.08] font-bold text-white md:text-[48px]">
+                {coffee.title}
+              </h2>
+              {coffee.tagline && (
+                <p className="font-display-italic text-[24px] text-accent-on-dark">
+                  {coffee.tagline}
+                </p>
+              )}
+              {coffee.summary && <p className="text-body-lg text-white/80">{coffee.summary}</p>}
               {coffeeItems.length > 0 && (
-                <ul className="grid gap-3 sm:grid-cols-2">
+                <ul className="grid w-full gap-3 sm:grid-cols-2">
                   {coffeeItems.map((item) => (
-                    <li key={item.id} {...temp(item)} className="card flex items-baseline justify-between gap-3 p-4">
+                    <li
+                      key={item.id}
+                      {...temp(item)}
+                      className="flex items-baseline justify-between gap-3 rounded-card border border-white/10 bg-primary p-4"
+                    >
                       <span>
-                        <strong className="block">{item.name}</strong>
-                        {item.description && <span className="text-small text-muted-foreground">{item.description}</span>}
+                        <strong className="block text-white">{item.name}</strong>
+                        {item.description && (
+                          <span className="text-small text-white/70">{item.description}</span>
+                        )}
                       </span>
-                      <span className="font-bold whitespace-nowrap">{formatRupiah(item.price)}</span>
+                      <span className="font-bold whitespace-nowrap text-accent-on-dark">
+                        {formatRupiah(item.price)}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
           </div>
-        </section>
+        </Section>
       )}
 
       {!!dining?.facilities?.length && (
-        <Section alt eyebrow={t.dining.ambienceEyebrow} title={t.dining.ambienceTitle}>
+        <Section tone="cream">
+          <SectionHeader eyebrow={t.dining.ambienceEyebrow} title={t.dining.ambienceTitle} />
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {dining.facilities.map((area, i) => (
-              <li key={area.id ?? area.label} className="flex flex-col gap-3">
-                <CmsImage
-                  media={dining.gallery?.[i]}
-                  placeholder={area.label}
-                  sizes="(min-width: 1024px) 33vw, 50vw"
-                  className="aspect-[16/10] w-full rounded-card"
+              <li
+                key={area.id ?? area.label}
+                className="group relative overflow-hidden rounded-card"
+              >
+                <div className="zoom-media">
+                  <CmsImage
+                    media={dining.gallery?.[i]}
+                    placeholder={area.label}
+                    sizes="(min-width: 1024px) 33vw, 50vw"
+                    className="aspect-[4/3] w-full"
+                  />
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-linear-to-b from-transparent from-50% to-[rgb(0_0_0/0.75)]"
                 />
-                <strong>{area.label}</strong>
+                <strong className="absolute inset-x-0 bottom-0 p-5 font-sans text-body-lg text-white">
+                  {area.label}
+                </strong>
               </li>
             ))}
           </ul>
         </Section>
       )}
 
-      <div className="pt-section-mobile md:pt-section">
-        <CtaBand title={t.dining.ctaTitle} text={t.dining.ctaText} locale={locale}>
-          <WhatsAppButton number={wa} locale={locale} topic={topic} label={t.cta.bookViaWhatsApp} />
-        </CtaBand>
-      </div>
+      <CtaBand locale={locale} title={t.dining.ctaTitle} text={t.dining.ctaText}>
+        <WhatsAppButton
+          number={wa}
+          locale={locale}
+          topic={topic}
+          label={t.cta.bookViaWhatsApp}
+          variant="gold"
+        />
+      </CtaBand>
     </>
   )
 }

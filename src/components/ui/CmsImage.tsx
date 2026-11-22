@@ -19,10 +19,17 @@ type Props = {
  * Renders a Payload image with its localized alt text, or a labelled sand placeholder
  * when no photo has been uploaded yet. The wrapper sets the box; the image covers it.
  */
-export function CmsImage({ media, placeholder, className, sizes = '100vw', priority, size = 'card' }: Props) {
+export function CmsImage({
+  media,
+  placeholder,
+  className,
+  sizes = '100vw',
+  priority,
+  size = 'card',
+}: Props) {
   const doc = typeof media === 'object' && media ? media : null
   const variant = doc?.sizes?.[size]
-  const src = mediaSrc(variant?.url || doc?.url)
+  const src = mediaSrc(variant?.url || doc?.url, doc?.updatedAt)
 
   if (!doc || !src) {
     return (
@@ -50,7 +57,11 @@ export function CmsImage({ media, placeholder, className, sizes = '100vw', prior
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : undefined}
         className="object-cover"
-        style={doc.focalX != null && doc.focalY != null ? { objectPosition: `${doc.focalX}% ${doc.focalY}%` } : undefined}
+        style={
+          doc.focalX != null && doc.focalY != null
+            ? { objectPosition: `${doc.focalX}% ${doc.focalY}%` }
+            : undefined
+        }
       />
     </div>
   )

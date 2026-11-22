@@ -35,11 +35,16 @@
   --color-danger: var(--ds-color-danger);
   --color-ring: var(--ds-color-ring);
   --color-white: #FFFFFF;
+  /* Layout v2 tints, all lighter steps of the v1 palette (docs/spec-layout-v2.md §3.1) */
+  --color-tint-leaf: #B8D4BE;
+  --color-tint-sand: #F3E7CF;
+  --color-tint-mint: #E6EFE8;
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  /* Fonts — variables are set by next/font in src/app/fonts.ts */
-  --font-display: var(--font-caveat), cursive;
+  /* Fonts — variables are set by next/font in src/app/fonts.ts (layout v2: Cormorant Garamond headings) */
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-display-italic: var(--font-cormorant-italic), Georgia, serif;
   --font-sans: var(--font-nunito-sans), system-ui, sans-serif;
 
   /* Type scale (mobile-first values; larger sizes via md:/lg: utilities) */
@@ -87,12 +92,14 @@
   body {
     @apply bg-background text-foreground font-sans text-body antialiased;
   }
-  h1, h2 {
-    @apply font-display font-bold text-primary;
+  /* Layout v2: serif headings in the text colour; sizes are set per component. */
+  h1, h2, h3 {
+    @apply font-display font-bold text-foreground;
+    letter-spacing: -0.02em;
   }
   h1 { @apply text-display-xl lg:text-display-2xl; }
   h2 { @apply text-display-lg lg:text-display-xlg; }
-  h3 { @apply font-sans font-extrabold text-h3; }
+  h3 { @apply text-h3; }
   a { @apply text-primary; }
   a:hover { @apply text-primary-hover; }
 
@@ -127,23 +134,17 @@
 /* Shared component classes. Prefer React components in src/components/ui that use these. */
 @layer components {
   .container-content { @apply mx-auto w-full max-w-content px-6; }
-  .section { @apply py-section-mobile md:py-section; }
-  .section-alt { @apply bg-surface-alt; }
-
-  .eyebrow { @apply text-caption font-bold uppercase tracking-[0.16em] text-accent-text; }
 
   .btn-primary { @apply btn bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary; }
   .btn-outline { @apply btn border-2 border-primary bg-surface text-primary hover:bg-highlight hover:text-primary-hover; }
   .btn-link    { @apply inline-flex min-h-touch items-center font-bold text-primary underline-offset-4 hover:underline; }
-
-  .card-interactive { @apply card hover:shadow-raised; }
-
-  .icon-circle { @apply inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-highlight text-primary; }
+  /* Layout v2 buttons on photos and dark sections (§4.3) */
+  .btn-glass         { @apply btn border border-white/30 bg-[rgb(0_0_0/0.4)] text-white backdrop-blur hover:bg-[rgb(0_0_0/0.55)] hover:text-white; }
+  .btn-outline-light { @apply btn border border-white/45 text-white hover:bg-white/10 hover:text-white; }
+  .btn-gold          { @apply btn bg-accent-on-dark text-foreground hover:bg-tint-sand hover:text-foreground; }
 
   .badge-available { @apply badge bg-highlight text-primary; }
   .badge-soon      { @apply badge bg-warm text-on-warm; }
-  .badge-tag       { @apply badge bg-surface-alt text-foreground; }
-  .badge-validity  { @apply badge border-[1.5px] border-accent-text text-accent-text; }
 
   .field-label { @apply flex flex-col gap-1.5 text-small font-bold text-foreground; }
   .field-input {
@@ -152,8 +153,53 @@
   }
   .field-input[aria-invalid="true"] { @apply border-danger; }
   .field-error { @apply text-caption font-semibold text-danger; }
+}
 
-  .media { @apply overflow-hidden rounded-media bg-placeholder; }
+/* ── Layout v2 (docs/spec-layout-v2.md) ─────────────────────────────────────── */
+:root {
+  /* Photos slightly less rounded than design system v1 (32px); cards stay 20px. */
+  --ds-radius-media: 24px;
+}
+
+.font-display-italic {
+  font-family: var(--font-display-italic);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Header: frosted glass, solid where backdrop-filter is unsupported (§4.1) */
+.glass {
+  background: rgb(255 255 255 / 0.95);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass {
+    background: rgb(255 255 255 / 0.82);
+    backdrop-filter: blur(14px) saturate(1.4);
+  }
+}
+
+/* Photo cards: gentle zoom on hover or keyboard focus (§4.4); off with reduced motion (rule above). */
+.zoom-media img {
+  transition: transform 300ms ease;
+}
+.group:hover .zoom-media img,
+.group:focus-visible .zoom-media img {
+  transform: scale(1.04);
+}
+
+.scroll-dot {
+  animation: scroll-dot 1.8s ease-in-out infinite;
+}
+@keyframes scroll-dot {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  60% { transform: translateY(8px); opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .zoom-media img,
+  .group:focus-visible .zoom-media img {
+    transform: none;
+  }
 }
 
 /* F-15 staging marker: content that still uses temporary data (SHOW_TEMP_MARKERS=true only). */

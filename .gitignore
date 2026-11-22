@@ -57,3 +57,6 @@ node_modules/
 
 # Lighthouse raw reports (summary.md is kept)
 /qa/lighthouse/*.json
+
+# downloaded temporary stock photos (pnpm seed:images)
+/.cache/

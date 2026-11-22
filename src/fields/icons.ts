@@ -11,6 +11,7 @@ export const ICON_OPTIONS = [
   { value: 'utensils', label: 'Utensils (food)' },
   { value: 'coffee', label: 'Coffee' },
   { value: 'sparkles', label: 'Sparkles' },
+  { value: 'laptop', label: 'Laptop (work)' },
 ] as const
 
 export type IconName = (typeof ICON_OPTIONS)[number]['value']

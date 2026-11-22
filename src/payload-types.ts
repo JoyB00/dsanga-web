@@ -181,6 +181,10 @@ export interface Experience {
    */
   pic?: string | null;
   tagline?: string | null;
+  /**
+   * Short line on the dark Home card, e.g. “Kids’ and adults’ pools”. Empty = tagline.
+   */
+  cardTag?: string | null;
   summary?: string | null;
   heroImage?: (number | null) | Media;
   gallery?: (number | Media)[] | null;
@@ -853,6 +857,7 @@ export interface ExperiencesSelect<T extends boolean = true> {
   verified?: T;
   pic?: T;
   tagline?: T;
+  cardTag?: T;
   summary?: T;
   heroImage?: T;
   gallery?: T;
@@ -1306,7 +1311,18 @@ export interface HomePage {
   hero: {
     eyebrow?: string | null;
     title: string;
+    /**
+     * Words at the end of the title shown in the accent colour, e.g. “a Space for Everyone”. Must appear in the title.
+     */
+    titleAccent?: string | null;
+    /**
+     * Short italic line under the title. Empty = hidden.
+     */
+    tagline?: string | null;
     intro: string;
+    /**
+     * Full-width photo behind the title: landscape, at least 2400 px wide, calm area in the middle.
+     */
     image?: (number | null) | Media;
   };
   experiences: {
@@ -1322,12 +1338,69 @@ export interface HomePage {
     eyebrow?: string | null;
     title: string;
     text?: string | null;
+    /**
+     * Quote card under the text. Empty = hidden.
+     */
+    quote?: string | null;
     image?: (number | null) | Media;
     values?:
       | {
           label: string;
           icon?:
-            ('leaf' | 'users' | 'house' | 'calendar' | 'heart' | 'waves' | 'utensils' | 'coffee' | 'sparkles') | null;
+            | (
+                | 'leaf'
+                | 'users'
+                | 'house'
+                | 'calendar'
+                | 'heart'
+                | 'waves'
+                | 'utensils'
+                | 'coffee'
+                | 'sparkles'
+                | 'laptop'
+              )
+            | null;
+          /**
+           * One short sentence (hidden on phones).
+           */
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * One card per experience type: Pool, Bistro & Coffee, Work & Space, Activities.
+   */
+  ways?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    intro?: string | null;
+  };
+  /**
+   * Hidden when there are no items.
+   */
+  whyVisit?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    intro?: string | null;
+    items?:
+      | {
+          icon?:
+            | (
+                | 'leaf'
+                | 'users'
+                | 'house'
+                | 'calendar'
+                | 'heart'
+                | 'waves'
+                | 'utensils'
+                | 'coffee'
+                | 'sparkles'
+                | 'laptop'
+              )
+            | null;
+          title: string;
+          text?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -1339,6 +1412,11 @@ export interface HomePage {
   visit?: {
     eyebrow?: string | null;
     title?: string | null;
+  };
+  cta?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    text?: string | null;
   };
   /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
@@ -1406,7 +1484,19 @@ export interface AboutPage {
           title: string;
           text?: string | null;
           icon?:
-            ('leaf' | 'users' | 'house' | 'calendar' | 'heart' | 'waves' | 'utensils' | 'coffee' | 'sparkles') | null;
+            | (
+                | 'leaf'
+                | 'users'
+                | 'house'
+                | 'calendar'
+                | 'heart'
+                | 'waves'
+                | 'utensils'
+                | 'coffee'
+                | 'sparkles'
+                | 'laptop'
+              )
+            | null;
           id?: string | null;
         }[]
       | null;
@@ -1539,6 +1629,8 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         eyebrow?: T;
         title?: T;
+        titleAccent?: T;
+        tagline?: T;
         intro?: T;
         image?: T;
       };
@@ -1561,12 +1653,36 @@ export interface HomePageSelect<T extends boolean = true> {
         eyebrow?: T;
         title?: T;
         text?: T;
+        quote?: T;
         image?: T;
         values?:
           | T
           | {
               label?: T;
               icon?: T;
+              text?: T;
+              id?: T;
+            };
+      };
+  ways?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        intro?: T;
+      };
+  whyVisit?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        intro?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
               id?: T;
             };
       };
@@ -1581,6 +1697,13 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         eyebrow?: T;
         title?: T;
+      };
+  cta?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        text?: T;
       };
   verified?: T;
   pic?: T;

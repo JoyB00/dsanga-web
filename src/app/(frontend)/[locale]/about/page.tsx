@@ -1,18 +1,18 @@
-import { CircleCheck } from 'lucide-react'
 import type { Metadata } from 'next'
+import { ArrowRight, CircleCheck } from 'lucide-react'
 import Link from 'next/link'
 
 import { CmsImage } from '@/components/ui/CmsImage'
-import { CtaBand } from '@/components/ui/CtaBand'
-import { PageHero } from '@/components/ui/PageHero'
 import { RichText } from '@/components/ui/RichText'
-import { Section } from '@/components/ui/Section'
-import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { iconFor } from '@/lib/icons'
 import { getSiteSettings } from '@/lib/payload'
 import { getAboutPage, getGalleryMedia } from '@/lib/queries'
+import { PageHero } from '@/components/ui/PageHero'
+import { Eyebrow, Section, SectionHeader } from '@/components/ui/Section'
+import { CtaBand } from '@/components/ui/CtaBand'
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { pageMetadata } from '@/lib/seo'
 import { temp } from '@/lib/verification'
 
@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   })
 }
 
+/** About (spec-layout-v2 §6.2): story with a "managed by" quote, purpose with photos, values on dark, CTA. */
 export default async function AboutPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
@@ -41,9 +42,11 @@ export default async function AboutPage({ params }: Props) {
   ])
   const wa = settings?.whatsappNumber
 
-  // Copy is edited in the CMS (About page global); built-in text only fills empty fields.
   const title = about?.hero?.title || t.about.title
-  const purpose = about?.purpose?.items?.length ? about.purpose.items.map((i) => i.text) : t.about.purpose
+  const storyEyebrow = about?.story?.eyebrow || t.about.storyEyebrow
+  const purpose = about?.purpose?.items?.length
+    ? about.purpose.items.map((i) => i.text)
+    : t.about.purpose
   const values = about?.values?.items?.length
     ? about.values.items.map((v) => ({ title: v.title, text: v.text, Icon: iconFor(v.icon) }))
     : t.about.values.map((v) => ({ ...v, Icon: iconFor('leaf') }))
@@ -57,93 +60,135 @@ export default async function AboutPage({ params }: Props) {
         tagline={about?.hero?.tagline || t.about.tagline}
         intro={about?.hero?.intro || t.about.intro}
         image={about?.hero?.image}
-        imagePlaceholder={t.about.heroPlaceholder}
         actions={
           <>
             <a href="#story" className="btn-primary">
-              {about?.story?.eyebrow || t.about.storyEyebrow}
+              {storyEyebrow}
             </a>
-            <WhatsAppButton number={wa} locale={locale} label={t.cta.contactUs} variant="outline" />
+            <WhatsAppButton number={wa} locale={locale} label={t.cta.contactUs} variant="glass" />
           </>
         }
       />
 
-      {photos.length > 0 && (
-        <div className="container-content -mt-4 pb-4">
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {photos.map((m) => (
-              <li key={m.id} {...temp(m)}>
-                <Link href={href('gallery', locale)} aria-label={`${t.nav.gallery}: ${m.alt}`} className="block">
-                  <CmsImage media={m} placeholder="" size="thumb" sizes="(min-width: 768px) 25vw, 50vw" className="aspect-[16/10] w-full rounded-card" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <Section id="story" alt>
+      {/* Story: heading left, text right, "managed by" as a quote card */}
+      <Section id="story" tone="soft">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-          <div className="flex flex-col gap-3">
-            <span className="eyebrow">{about?.story?.eyebrow || t.about.storyEyebrow}</span>
-            <h2>{about?.story?.title || t.about.storyTitle}</h2>
+          <div className="flex flex-col items-start gap-4">
+            <Eyebrow>{storyEyebrow}</Eyebrow>
+            <h2 className="text-[34px] leading-[1.08] font-bold text-foreground md:text-[48px]">
+              {about?.story?.title || t.about.storyTitle}
+            </h2>
           </div>
-          {about?.story?.body ? (
-            <RichText data={about.story.body} className="text-body-lg" />
-          ) : (
-            <div className="flex flex-col gap-4 text-body-lg text-muted-foreground">
-              {t.about.story.map((p) => (
-                <p key={p}>{p}</p>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-col gap-6">
+            {about?.story?.body ? (
+              <RichText data={about.story.body} className="text-body-lg" />
+            ) : (
+              <div className="flex flex-col gap-4 text-body-lg text-muted-foreground">
+                {t.about.story.map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
+              </div>
+            )}
+            <blockquote className="rounded-card border border-border bg-surface p-6 shadow-card">
+              <span className="text-[12px] font-bold tracking-[0.18em] text-accent-text uppercase">
+                {about?.managed?.eyebrow || t.about.managedEyebrow}
+              </span>
+              <p className="font-display-italic mt-2 text-[24px] leading-snug text-primary">
+                {about?.managed?.title || t.about.managedTitle}
+              </p>
+              <p className="mt-2 text-muted-foreground">
+                {about?.managed?.text || t.about.managedText}
+              </p>
+            </blockquote>
+          </div>
         </div>
       </Section>
 
-      <section className="section">
-        <div className="container-content grid gap-6 lg:grid-cols-2">
-          <div className="card flex flex-col gap-3 p-8">
-            <span className="eyebrow">{about?.managed?.eyebrow || t.about.managedEyebrow}</span>
-            <h2 className="text-display-lg lg:text-display-lg">{about?.managed?.title || t.about.managedTitle}</h2>
-            <p className="text-muted-foreground">{about?.managed?.text || t.about.managedText}</p>
-          </div>
-          <div className="card flex flex-col gap-3 p-8">
-            <span className="eyebrow">{about?.purpose?.eyebrow || t.about.purposeEyebrow}</span>
-            <h2 className="text-display-lg lg:text-display-lg">{about?.purpose?.title || t.about.purposeTitle}</h2>
-            <ul className="flex flex-col gap-2">
+      {/* Purpose, next to a staggered photo grid */}
+      <Section tone="white">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          {photos.length > 0 && (
+            <ul className="grid grid-cols-2 gap-3 pb-6">
+              {photos.map((m, i) => (
+                <li key={m.id} {...temp(m)} className={i % 2 ? 'translate-y-6' : ''}>
+                  <Link
+                    href={href('gallery', locale)}
+                    aria-label={`${t.nav.gallery}: ${m.alt}`}
+                    className="group block"
+                  >
+                    <div className="zoom-media overflow-hidden rounded-card">
+                      <CmsImage
+                        media={m}
+                        placeholder=""
+                        size="card"
+                        sizes="(min-width: 1024px) 25vw, 50vw"
+                        className="aspect-[4/5] w-full"
+                      />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-col items-start gap-6">
+            <SectionHeader
+              center={false}
+              eyebrow={about?.purpose?.eyebrow || t.about.purposeEyebrow}
+              title={about?.purpose?.title || t.about.purposeTitle}
+            />
+            <ul className="flex flex-col gap-3">
               {purpose.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <CircleCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-body-lg text-muted-foreground"
+                >
+                  <CircleCheck className="mt-1 size-5 shrink-0 text-primary" aria-hidden="true" />
                   {item}
                 </li>
               ))}
             </ul>
+            <Link href={href('gallery', locale)} className="btn-outline">
+              {t.home.openGallery}
+              <ArrowRight className="size-5" aria-hidden="true" />
+            </Link>
           </div>
         </div>
-      </section>
+      </Section>
 
-      <Section alt eyebrow={about?.values?.eyebrow || t.about.valuesEyebrow} title={about?.values?.title || t.about.valuesTitle}>
-        <ul className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-5">
+      {/* Values: the page's one dark section */}
+      <Section tone="dark">
+        <SectionHeader
+          dark
+          eyebrow={about?.values?.eyebrow || t.about.valuesEyebrow}
+          title={about?.values?.title || t.about.valuesTitle}
+        />
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {values.map(({ title: valueTitle, text, Icon }) => (
-            <li key={valueTitle} className="card flex flex-col gap-3 p-6">
-              <span className="icon-circle" aria-hidden="true">
-                <Icon className="size-6" strokeWidth={1.75} />
+            <li
+              key={valueTitle}
+              className="flex flex-col gap-3 rounded-card border border-white/10 bg-primary p-6"
+            >
+              <span className="inline-flex size-12 items-center justify-center rounded-xl bg-white/8 text-accent-on-dark">
+                <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />
               </span>
-              <h3>{valueTitle}</h3>
-              {text && <p className="text-muted-foreground">{text}</p>}
+              <h3 className="text-[22px] leading-tight font-bold text-white">{valueTitle}</h3>
+              {text && <p className="text-small text-white/75">{text}</p>}
             </li>
           ))}
         </ul>
       </Section>
 
-      <div className="pt-section-mobile md:pt-section">
-        <CtaBand title={about?.cta?.title || t.about.ctaTitle} text={about?.cta?.text || t.about.ctaText} locale={locale} showNotice={false}>
-          <WhatsAppButton number={wa} locale={locale} label={t.cta.contactUs} />
-          <Link href={href('visit', locale)} className="btn-outline">
-            {t.about.planVisit}
-          </Link>
-        </CtaBand>
-      </div>
+      <CtaBand
+        showNotice={false}
+        locale={locale}
+        title={about?.cta?.title || t.about.ctaTitle}
+        text={about?.cta?.text || t.about.ctaText}
+      >
+        <WhatsAppButton number={wa} locale={locale} label={t.cta.contactUs} variant="gold" />
+        <Link href={href('visit', locale)} className="btn-outline-light">
+          {t.about.planVisit}
+        </Link>
+      </CtaBand>
     </>
   )
 }

@@ -11,6 +11,7 @@ import { getPayload, type CollectionSlug, type Payload, type Where } from 'paylo
 
 import { getDictionary } from '../i18n/dictionaries'
 import config from '../payload.config'
+import { seedTempImages } from './tempImages'
 
 type Data = Record<string, unknown>
 
@@ -79,6 +80,7 @@ async function seedPages(payload: Payload, log: (m: string) => void) {
   const en = getDictionary('en')
   const id = getDictionary('id')
   const valueIcons = ['leaf', 'users', 'calendar', 'house']
+  const whyIcons = ['leaf', 'users', 'laptop', 'heart']
 
   // Home page
   const home = (await payload.updateGlobal({
@@ -86,33 +88,46 @@ async function seedPages(payload: Payload, log: (m: string) => void) {
     locale: 'en',
     data: {
       _status: 'published',
-      hero: { eyebrow: en.home.eyebrow, title: en.home.title, intro: en.home.intro },
+      hero: { eyebrow: en.home.eyebrow, title: en.home.title, titleAccent: en.home.titleAccent, tagline: en.home.tagline, intro: en.home.intro },
+      ways: { eyebrow: en.home.waysEyebrow, title: en.home.waysTitle, intro: en.home.waysIntro },
+      cta: { eyebrow: en.home.ctaEyebrow, title: en.home.ctaTitle, text: en.home.ctaText },
       experiences: { eyebrow: en.home.experiencesEyebrow, title: en.home.experiencesTitle, intro: en.home.experiencesIntro },
       highlights: { eyebrow: en.home.offersEyebrow, title: en.home.offersTitle },
       about: {
         eyebrow: en.home.aboutEyebrow,
         title: en.home.aboutTitle,
         text: en.home.aboutText,
-        values: Object.values(en.home.values).map((label, i) => ({ label, icon: valueIcons[i] })),
+        quote: en.home.aboutQuote,
+        values: Object.values(en.home.values).map((label, i) => ({ label, icon: valueIcons[i], text: en.home.valueTexts[i] })),
+      },
+      whyVisit: {
+        eyebrow: en.home.whyEyebrow,
+        title: en.home.whyTitle,
+        intro: en.home.whyIntro,
+        items: en.home.why.map((item, i) => ({ ...item, icon: whyIcons[i] })),
       },
       gallery: { eyebrow: en.home.galleryEyebrow, title: en.home.galleryTitle },
       visit: { eyebrow: en.home.visitEyebrow, title: en.home.visitTitle },
     } as never,
-  })) as unknown as { about: Data }
+  })) as unknown as { about: Data; whyVisit: Data }
   await payload.updateGlobal({
     slug: 'home-page',
     locale: 'id',
     data: {
       _status: 'published',
-      hero: { eyebrow: id.home.eyebrow, title: id.home.title, intro: id.home.intro },
+      hero: { eyebrow: id.home.eyebrow, title: id.home.title, titleAccent: id.home.titleAccent, tagline: id.home.tagline, intro: id.home.intro },
+      ways: { eyebrow: id.home.waysEyebrow, title: id.home.waysTitle, intro: id.home.waysIntro },
+      cta: { eyebrow: id.home.ctaEyebrow, title: id.home.ctaTitle, text: id.home.ctaText },
       experiences: { eyebrow: id.home.experiencesEyebrow, title: id.home.experiencesTitle, intro: id.home.experiencesIntro },
       highlights: { eyebrow: id.home.offersEyebrow, title: id.home.offersTitle },
       about: {
         eyebrow: id.home.aboutEyebrow,
         title: id.home.aboutTitle,
         text: id.home.aboutText,
-        values: rows(home.about, 'values', Object.values(id.home.values).map((label) => ({ label }))),
+        quote: id.home.aboutQuote,
+        values: rows(home.about, 'values', Object.values(id.home.values).map((label, i) => ({ label, text: id.home.valueTexts[i] }))),
       },
+      whyVisit: { eyebrow: id.home.whyEyebrow, title: id.home.whyTitle, intro: id.home.whyIntro, items: rows(home.whyVisit, 'items', id.home.why) },
       gallery: { eyebrow: id.home.galleryEyebrow, title: id.home.galleryTitle },
       visit: { eyebrow: id.home.visitEyebrow, title: id.home.visitTitle },
     } as never,
@@ -375,42 +390,6 @@ async function seed() {
   }
   log(`${experiences.length} experiences`)
 
-  // ── Gallery placeholder photos (generated, clearly labelled TEMP) ─────────────
-  const galleryPhotos: [string, string, string][] = [
-    ['pool', 'Pool with umbrellas', 'Kolam dengan payung'],
-    ['pool', 'Children’s pool', 'Kolam anak'],
-    ['dining', 'Signature dishes on the table', 'Hidangan unggulan di meja'],
-    ['dining', 'Barista pouring a V60', 'Barista menuang V60'],
-    ['work', 'Pavilion desks', 'Meja di pavilion'],
-    ['activities', 'Kids on the swing', 'Anak-anak bermain ayunan'],
-    ['events', 'Live acoustic night', 'Malam akustik'],
-    ['ambience', 'Garden path at dusk', 'Jalan taman saat senja'],
-  ]
-  const { totalDocs: existingPhotos } = await payload.count({ collection: 'media', where: { filename: { like: 'temp-gallery' } } })
-  if (!existingPhotos) {
-    const sharp = (await import('sharp')).default
-    for (const [i, [category, altEn, altId]] of galleryPhotos.entries()) {
-      const hue = [150, 140, 35, 30, 95, 45, 20, 120][i]
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200">
-        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="hsl(${hue},28%,72%)"/><stop offset="1" stop-color="hsl(${hue},32%,42%)"/>
-        </linearGradient></defs>
-        <rect width="1600" height="1200" fill="url(#g)"/>
-        <text x="800" y="560" font-family="Helvetica, Arial, sans-serif" font-size="64" font-weight="700" fill="#fff" text-anchor="middle">TEMP PHOTO</text>
-        <text x="800" y="650" font-family="Helvetica, Arial, sans-serif" font-size="44" fill="#fff" text-anchor="middle">${altEn}</text>
-      </svg>`
-      const data = await sharp(Buffer.from(svg)).jpeg({ quality: 82 }).toBuffer()
-      const doc = await payload.create({
-        collection: 'media',
-        locale: 'en',
-        data: { alt: `${altEn} (temporary photo)`, showInGallery: true, galleryCategory: category as never, usageRights: 'Generated placeholder — replace before go-live' },
-        file: { data, mimetype: 'image/jpeg', name: `temp-gallery-${i + 1}.jpg`, size: data.length },
-      })
-      await payload.update({ collection: 'media', id: doc.id, locale: 'id', data: { alt: `${altId} (foto sementara)` } })
-    }
-    log(`${galleryPhotos.length} gallery placeholder photos`)
-  }
-
   // ── Menu ─────────────────────────────────────────────────────────────────────
   const menu: [Data, Data][] = [
     [{ name: 'Nasi Campur Bali', description: 'Rice with mixed Balinese sides', category: 'mains', price: 55000, featured: true, dietaryNote: 'Spicy · Contains peanuts' }, { name: 'Nasi Campur Bali', description: 'Nasi dengan aneka lauk khas Bali', dietaryNote: 'Pedas · Mengandung kacang' }],
@@ -475,6 +454,9 @@ async function seed() {
     await upsert(payload, 'faqs', { question: { equals: en.question } }, { ...en, order: i, verified: false, _status: 'published' }, () => id)
   }
   log(`${faqs.length} FAQs`)
+
+  // ── Temporary photos for every image slot (generated, labelled, unverified) ──
+  await seedTempImages(payload, log)
 
   log('done — all records are marked as unverified temporary data (F-15)')
 }

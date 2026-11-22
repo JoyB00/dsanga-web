@@ -1,18 +1,23 @@
-import { Clock, Ticket } from 'lucide-react'
 import type { Metadata } from 'next'
+import { Clock, Ticket } from 'lucide-react'
+import Link from 'next/link'
 
 import { AvailabilityBadge } from '@/components/ui/AvailabilityBadge'
 import { CmsImage } from '@/components/ui/CmsImage'
-import { InfoCard } from '@/components/ui/InfoCard'
-import { PageHero } from '@/components/ui/PageHero'
 import { RichText } from '@/components/ui/RichText'
-import { Section } from '@/components/ui/Section'
-import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { cn } from '@/lib/cn'
 import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getActivities } from '@/lib/queries'
+import { Catalog } from '@/components/ui/Catalog'
+import { OverlayCard } from '@/components/ui/OverlayCard'
+import { PageHero } from '@/components/ui/PageHero'
+import { Section, SectionHeader } from '@/components/ui/Section'
+import { CtaBand } from '@/components/ui/CtaBand'
+import { InfoCard } from '@/components/ui/InfoCard'
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { pageMetadata } from '@/lib/seo'
 import { temp } from '@/lib/verification'
 
@@ -21,14 +26,24 @@ type Props = { params: Promise<{ locale: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = await localeFromParams(params)
   const head = await getPageHead('activities', locale)
-  return pageMetadata({ key: 'activities', locale, title: head.title, description: head.intro || head.tagline, image: head.image })
+  return pageMetadata({
+    key: 'activities',
+    locale,
+    title: head.title,
+    description: head.intro || head.tagline,
+    image: head.image,
+  })
 }
 
+/** Activities (spec-layout-v2 §6.2): filterable photo-card catalog, then one detail block per activity. */
 export default async function ActivitiesPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
   const head = await getPageHead('activities', locale)
-  const [activities, settings] = await Promise.all([getActivities(locale), getSiteSettings(locale).catch(() => null)])
+  const [activities, settings] = await Promise.all([
+    getActivities(locale),
+    getSiteSettings(locale).catch(() => null),
+  ])
   const wa = settings?.whatsappNumber
 
   return (
@@ -40,7 +55,6 @@ export default async function ActivitiesPage({ params }: Props) {
         tagline={head.tagline}
         intro={head.intro}
         image={head.image}
-        imagePlaceholder={t.activities.heroPlaceholder}
         actions={
           <a href="#all" className="btn-primary">
             {t.cta.viewAll}
@@ -48,22 +62,43 @@ export default async function ActivitiesPage({ params }: Props) {
         }
       />
 
-      {/* All activities — status shown as text (Available / Coming Soon); hidden ones never load (F-02) */}
-      <Section id="all" alt eyebrow={t.activities.allEyebrow} title={t.activities.allTitle}>
-        <ul className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
-          {activities.map((act) => (
-            <li key={act.id} {...temp(act)}>
-              <a href={`#${act.key}`} className="card-interactive flex h-full flex-col overflow-hidden no-underline">
-                <CmsImage media={act.heroImage} placeholder={act.title} className="aspect-[4/3] w-full" sizes="(min-width: 1024px) 33vw, 50vw" />
-                <div className="flex flex-col gap-2 p-5">
-                  <AvailabilityBadge availability={act.availability} locale={locale} className="self-start" />
-                  <h3 className="text-foreground">{act.title}</h3>
-                  {act.tagline && <p className="text-muted-foreground">{act.tagline}</p>}
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
+      {/* All activities; hidden ones never load (F-02) */}
+      <Section id="all" tone="alt">
+        <SectionHeader eyebrow={t.activities.allEyebrow} title={t.activities.allTitle} />
+        <Catalog
+          allLabel={t.catalog.all}
+          resultsLabel={t.catalog.results}
+          filters={[
+            { value: 'available', label: t.status.available },
+            { value: 'coming-soon', label: t.status.comingSoon },
+          ]}
+          items={activities.map((act) => ({
+            id: act.id,
+            type: act.availability,
+            node: (
+              <OverlayCard
+                {...temp(act)}
+                href={`#${act.key}`}
+                image={act.heroImage}
+                category={act.tagline || t.nav.activities}
+                title={act.title}
+                badge={act.availability === 'coming-soon' ? t.status.comingSoon : undefined}
+                chips={
+                  act.hours?.weekday
+                    ? [
+                        {
+                          icon: (
+                            <Clock className="size-3.5 text-accent-on-dark" aria-hidden="true" />
+                          ),
+                          text: `${t.openPrefix} ${act.hours.weekday}`,
+                        },
+                      ]
+                    : []
+                }
+              />
+            ),
+          }))}
+        />
       </Section>
 
       {/* One detail block per activity, reachable via #key from Home and the cards above */}
@@ -71,19 +106,26 @@ export default async function ActivitiesPage({ params }: Props) {
         const price = act.prices?.[0]
         const comingSoon = act.availability === 'coming-soon'
         return (
-          <section key={act.id} id={act.key} {...temp(act)} className={i % 2 ? 'section section-alt scroll-mt-24' : 'section scroll-mt-24'}>
-            <div className="container-content grid items-start gap-10 lg:grid-cols-2">
-              <CmsImage
-                media={act.heroImage}
-                placeholder={`${t.experience.photo} · ${act.title}`}
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="aspect-[4/3] w-full rounded-media"
-              />
-              <div className="flex flex-col gap-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2>{act.title}</h2>
-                  <AvailabilityBadge availability={act.availability} locale={locale} />
+          <Section key={act.id} id={act.key} {...temp(act)} tone={i % 2 ? 'white' : 'cream'}>
+            <div className="grid items-start gap-10 lg:grid-cols-2">
+              <div className={cn('group', i % 2 === 1 && 'lg:order-2')}>
+                <div className="zoom-media overflow-hidden rounded-media">
+                  <CmsImage
+                    media={act.heroImage}
+                    placeholder={`${t.experience.photo} · ${act.title}`}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="aspect-[4/3] w-full"
+                  />
                 </div>
+              </div>
+              <div className="flex flex-col items-start gap-5">
+                <AvailabilityBadge availability={act.availability} locale={locale} />
+                <h2 className="text-[34px] leading-[1.08] font-bold text-foreground md:text-[44px]">
+                  {act.title}
+                </h2>
+                {act.tagline && (
+                  <p className="font-display-italic text-[22px] text-accent-text">{act.tagline}</p>
+                )}
                 {act.summary && <p className="text-body-lg text-muted-foreground">{act.summary}</p>}
                 {comingSoon ? (
                   <>
@@ -94,13 +136,12 @@ export default async function ActivitiesPage({ params }: Props) {
                       topic={act.whatsappContext || act.title}
                       label={t.cta.contactUs}
                       variant="outline"
-                      className="self-start"
                     />
                   </>
                 ) : (
                   <>
                     {(act.hours?.weekday || price) && (
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid w-full gap-4 sm:grid-cols-2">
                         {act.hours?.weekday && (
                           <InfoCard icon={Clock} label={t.activities.hours}>
                             {act.hours.weekday}
@@ -115,13 +156,17 @@ export default async function ActivitiesPage({ params }: Props) {
                     )}
                     {act.rules && (
                       <div className="flex flex-col gap-2">
-                        <h3 className="text-body-lg">{t.activities.rules}</h3>
+                        <h3 className="font-sans text-body-lg font-extrabold">
+                          {t.activities.rules}
+                        </h3>
                         <RichText data={act.rules} />
                       </div>
                     )}
                     {act.childPolicy && (
                       <div className="flex flex-col gap-2">
-                        <h3 className="text-body-lg">{t.experience.childPolicy}</h3>
+                        <h3 className="font-sans text-body-lg font-extrabold">
+                          {t.experience.childPolicy}
+                        </h3>
                         <RichText data={act.childPolicy} />
                       </div>
                     )}
@@ -130,15 +175,26 @@ export default async function ActivitiesPage({ params }: Props) {
                       locale={locale}
                       topic={act.whatsappContext || act.title}
                       label={t.cta.bookViaWhatsApp}
-                      className="self-start"
                     />
                   </>
                 )}
               </div>
             </div>
-          </section>
+          </Section>
         )
       })}
+
+      <CtaBand
+        locale={locale}
+        eyebrow={t.home.ctaEyebrow}
+        title={t.home.ctaTitle}
+        text={t.home.ctaText}
+      >
+        <WhatsAppButton number={wa} locale={locale} label={t.home.chatWhatsApp} variant="gold" />
+        <Link href={href('events', locale)} className="btn-outline-light">
+          {t.nav.events}
+        </Link>
+      </CtaBand>
     </>
   )
 }

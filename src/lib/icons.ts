@@ -1,4 +1,4 @@
-import { CalendarDays, Coffee, Heart, House, Leaf, Sparkles, Users, UtensilsCrossed, Waves, type LucideIcon } from 'lucide-react'
+import { CalendarDays, Coffee, Heart, House, Laptop, Leaf, Sparkles, Users, UtensilsCrossed, Waves, type LucideIcon } from 'lucide-react'
 
 import type { IconName } from '../fields/icons'
 
@@ -13,6 +13,7 @@ export const ICONS: Record<IconName, LucideIcon> = {
   utensils: UtensilsCrossed,
   coffee: Coffee,
   sparkles: Sparkles,
+  laptop: Laptop,
 }
 
 export const iconFor = (name?: string | null): LucideIcon => ICONS[(name as IconName) ?? 'leaf'] ?? Leaf

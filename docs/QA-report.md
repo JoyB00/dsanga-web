@@ -4,6 +4,12 @@
 **Tested:** local environment, production build (`pnpm build && pnpm start`) and dev server, temporary data from spec §14.
 **Not yet tested here:** staging/production hosting, real R2 / SMTP / GA4 accounts, backups. These are covered in stage 7.
 
+> **Update 22 Nov 2026: layout v2 applied** (`docs/spec-layout-v2.md`). Re-checked after the change:
+> - All 22 integration tests and 67 browser tests pass (mobile menu test rewritten for the new menu incl. Escape; new catalog filter test).
+> - axe reports 0 violations on all 24 pages.
+> - No page scrolls sideways at 375 px.
+> - The Lighthouse figures below are from the old layout and must be re-measured on staging.
+
 ## Summary
 
 | Area | Result |

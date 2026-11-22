@@ -79,6 +79,12 @@ export const Experiences: CollectionConfig = {
           label: 'Content',
           fields: [
             { name: 'tagline', type: 'text', localized: true },
+            {
+              name: 'cardTag',
+              type: 'text',
+              localized: true,
+              admin: { description: 'Short line on the dark Home card, e.g. “Kids’ and adults’ pools”. Empty = tagline.' },
+            },
             { name: 'summary', type: 'textarea', localized: true },
             { name: 'heroImage', type: 'upload', relationTo: 'media' },
             { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true },

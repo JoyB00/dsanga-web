@@ -1,6 +1,6 @@
 # D’Sanga Pool, Bistro & Space — website
 
-Public website and CMS for D’Sanga (Desa Sukawati, Bali). Built from *Spesifikasi Website D’Sanga v1.3*, the approved wireframes and the design system v1.
+Public website and CMS for D’Sanga (Desa Sukawati, Bali). Built from *Spesifikasi Website D’Sanga v1.3*, the approved wireframes and the design system v1, with the layout v2 update (`docs/spec-layout-v2.md`: new layout and Cormorant Garamond headings, design system v1 colours).
 
 **Stack:** Next.js 16 (App Router) · Payload CMS 3 (inside the same app) · PostgreSQL · Tailwind CSS v4 · TypeScript.
 
@@ -30,6 +30,7 @@ pnpm dev
 |---|---|
 | `pnpm dev` | Dev server. Payload pushes schema changes to the dev database automatically. |
 | `pnpm seed` | Fills the CMS with temporary data (spec §14). Re-runnable; every record has **verified = false** (F-15). |
+| `pnpm seed:images` | Fills every image slot with a temporary photo: free Unsplash stock photos listed in `src/seed/stockPhotos.ts` (downloaded once to `.cache/stock/`, credit in each photo's *Usage rights*), or a generated illustration where none is listed. All stay unverified (F-15). Part of `pnpm seed`; `--force` recreates them. |
 | `pnpm build` / `pnpm start` | Production build / server. |
 | `pnpm generate:types` | Regenerate `src/payload-types.ts` after changing collections. |
 | `pnpm generate:importmap` | Regenerate the admin import map after adding custom admin components. |
@@ -98,6 +99,8 @@ src/
 - **GA4 setup:** in the GA4 property, register the custom dimensions `site_language`, `context`, `placement` and `cta_label` (event scope), mark `generate_lead` and `whatsapp_click` as key events, and turn **off** Enhanced measurement › "Page changes based on browser history events" and "Form interactions" (the site sends those itself; leaving them on double-counts).
 - **R2 setup:** create a bucket and an API token with Object Read & Write, set `S3_*`. For fast public images connect a custom domain (or r2.dev) to the bucket and set `S3_PUBLIC_URL`; without it files are streamed through `/api/media/file/…`. Upload existing local files again after switching (or copy `media/` and `documents/` into the bucket under the same prefixes).
 - **Share image:** `public/og-default.jpg` is a temporary brand card, used when a page has no hero photo. Replace it once real photos are approved.
+- **Layout v2** (`docs/spec-layout-v2.md`): building blocks live in `src/components/ui` — `PageHero` (full-width photo, or a short gradient header when there is no photo), `Section` / `SectionHeader` / `Eyebrow` (tones: cream, white, alt, soft, dark; at most one dark section per page), `OverlayCard` (photo card, the whole card is one link), `Catalog` (filter pills), `InfoCard` / `IconCard` / `Panel`, `CtaBand`; header and footer in `src/components/SiteHeader.tsx` / `SiteFooter.tsx`. The header is fixed, so every page starts with a hero (or the gradient header) that leaves room for it. WhatsApp buttons, including the floating “Ask us” button, stay hidden until a number is set (F-03).
+- **Home copy fields (layout v2):** Home page › Hero › *Title accent* (words at the end of the title shown in gold) and *Tagline*; About › *Quote* and a short text per value; *Four ways section*; *Why D’Sanga section* (hidden without items); *Closing call to action*. Experiences › *Card tag*. All optional and per language.
 - **Production database:** dev uses Payload's automatic schema push. Before the first deploy, create migrations (`pnpm payload migrate:create`) and run `pnpm payload migrate` on the server.
 
 ## Testing notes
@@ -112,3 +115,4 @@ src/
 - Photo alt text: an upload needs alt text in the language being edited; the second language is enforced by `pnpm check:golive` (not at upload, so one-step uploads still work).
 - Not yet tested against a real R2 bucket, SMTP server or GA4 property (needs the client's or vendor's test accounts). Locally: storage off, emails logged, GA tested with a dummy ID and Google requests blocked.
 - Stage 7: staging deploy, production migrations, HTTPS, automatic backups + restore test (F-09), re-run Lighthouse on staging over HTTP/2.
+- Layout v2: the client still has to approve the heading font change (Caveat → Cormorant Garamond) and the draft Home copy for the new fields (tagline, quote, Four ways, Why D’Sanga, closing CTA). The optional “A day at D’Sanga” timeline (spec §6.1 section 4) is not built.
