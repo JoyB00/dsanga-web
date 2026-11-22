@@ -2,6 +2,7 @@ import Image from 'next/image'
 
 import type { Media } from '@/payload-types'
 import { cn } from '@/lib/cn'
+import { mediaSrc } from '@/lib/media'
 
 type Props = {
   media?: Media | number | null
@@ -20,7 +21,7 @@ type Props = {
 export function CmsImage({ media, placeholder, className, sizes = '100vw', priority, size = 'card' }: Props) {
   const doc = typeof media === 'object' && media ? media : null
   const variant = doc?.sizes?.[size]
-  const src = variant?.url || doc?.url
+  const src = mediaSrc(variant?.url || doc?.url)
 
   if (!doc || !src) {
     return (

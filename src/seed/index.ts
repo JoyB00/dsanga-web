@@ -202,18 +202,89 @@ async function seed() {
       }),
     },
     {
-      en: { key: 'playground', type: 'activity', availability: 'available', order: 5, title: 'Swing & Playground', tagline: 'Fun for All Ages', whatsappContext: 'Playground' },
-      id: () => ({ title: 'Swing & Playground', tagline: 'Seru untuk Semua Usia', whatsappContext: 'Playground' }),
+      en: {
+        key: 'playground', type: 'activity', availability: 'available', order: 5, title: 'Swing & Playground', tagline: 'Fun for All Ages', whatsappContext: 'Playground',
+        summary: 'Wooden swings, slides and a sand area in the shade, next to the bistro garden so parents can watch from their table.',
+        hours: { weekday: '08.00–18.00', weekend: '08.00–18.00' },
+        prices: [{ label: 'Entry', weekday: 'Free with entry' }],
+        rules: rich('One child per swing. Shoes off in the sand area. Closed during heavy rain.'),
+        childPolicy: rich('For ages 2–12. An adult must stay nearby at all times.'),
+      },
+      id: (d) => ({
+        title: 'Swing & Playground', tagline: 'Seru untuk Semua Usia', whatsappContext: 'Playground',
+        summary: 'Ayunan kayu, perosotan, dan area pasir yang teduh, di samping taman bistro sehingga orang tua bisa mengawasi dari meja.',
+        prices: rows(d, 'prices', [{ label: 'Masuk', weekday: 'Gratis dengan tiket masuk' }]),
+        rules: rich('Satu anak per ayunan. Lepas alas kaki di area pasir. Tutup saat hujan deras.'),
+        childPolicy: rich('Untuk usia 2–12 tahun. Orang dewasa wajib berada di dekat anak.'),
+      }),
     },
     {
-      en: { key: 'wellness', type: 'activity', availability: 'coming-soon', order: 6, title: 'Wellness', tagline: 'Yoga & Pilates', whatsappContext: 'Wellness' },
-      id: () => ({ title: 'Wellness', tagline: 'Yoga & Pilates', whatsappContext: 'Wellness' }),
+      en: { key: 'wellness', type: 'activity', availability: 'coming-soon', order: 6, title: 'Wellness', tagline: 'Yoga & Pilates', whatsappContext: 'Wellness', summary: 'Morning yoga and pilates sessions on the lawn.' },
+      id: () => ({ title: 'Wellness', tagline: 'Yoga & Pilates', whatsappContext: 'Wellness', summary: 'Sesi yoga dan pilates pagi di halaman rumput.' }),
+    },
+    {
+      en: {
+        key: 'creative-classes', type: 'activity', availability: 'available', order: 7, title: 'Creative Classes', tagline: 'Painting, crafts & Balinese offerings', whatsappContext: 'Creative Classes',
+        summary: 'Small hands-on classes for families and groups. See the Events page for the schedule.',
+        prices: [{ label: 'Class', weekday: 'From Rp75.000', unit: '/ person' }],
+      },
+      id: (d) => ({
+        title: 'Kelas Kreatif', tagline: 'Melukis, kerajinan & canang sari', whatsappContext: 'Kelas Kreatif',
+        summary: 'Kelas praktik kecil untuk keluarga dan rombongan. Lihat jadwal di halaman Events.',
+        prices: rows(d, 'prices', [{ label: 'Kelas', weekday: 'Mulai Rp75.000', unit: '/ orang' }]),
+      }),
+    },
+    {
+      en: {
+        key: 'gathering', type: 'activity', availability: 'available', order: 8, title: 'Gathering & Outing', tagline: 'For schools, offices and communities', whatsappContext: 'Gathering & Outing',
+        summary: 'Packages for school trips, office outings and community meetings, combining pool, playground and lunch.',
+      },
+      id: () => ({
+        title: 'Gathering & Outing', tagline: 'Untuk sekolah, kantor, dan komunitas', whatsappContext: 'Gathering & Outing',
+        summary: 'Paket untuk kunjungan sekolah, outing kantor, dan pertemuan komunitas, termasuk kolam, taman bermain, dan makan siang.',
+      }),
     },
   ]
   for (const exp of experiences) {
     await upsert(payload, 'experiences', { key: { equals: exp.en.key } }, { ...exp.en, verified: false, _status: 'published' }, exp.id)
   }
   log(`${experiences.length} experiences`)
+
+  // ── Gallery placeholder photos (generated, clearly labelled TEMP) ─────────────
+  const galleryPhotos: [string, string, string][] = [
+    ['pool', 'Pool with umbrellas', 'Kolam dengan payung'],
+    ['pool', 'Children’s pool', 'Kolam anak'],
+    ['dining', 'Signature dishes on the table', 'Hidangan unggulan di meja'],
+    ['dining', 'Barista pouring a V60', 'Barista menuang V60'],
+    ['work', 'Pavilion desks', 'Meja di pavilion'],
+    ['activities', 'Kids on the swing', 'Anak-anak bermain ayunan'],
+    ['events', 'Live acoustic night', 'Malam akustik'],
+    ['ambience', 'Garden path at dusk', 'Jalan taman saat senja'],
+  ]
+  const { totalDocs: existingPhotos } = await payload.count({ collection: 'media', where: { filename: { like: 'temp-gallery' } } })
+  if (!existingPhotos) {
+    const sharp = (await import('sharp')).default
+    for (const [i, [category, altEn, altId]] of galleryPhotos.entries()) {
+      const hue = [150, 140, 35, 30, 95, 45, 20, 120][i]
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="hsl(${hue},28%,72%)"/><stop offset="1" stop-color="hsl(${hue},32%,42%)"/>
+        </linearGradient></defs>
+        <rect width="1600" height="1200" fill="url(#g)"/>
+        <text x="800" y="560" font-family="Helvetica, Arial, sans-serif" font-size="64" font-weight="700" fill="#fff" text-anchor="middle">TEMP PHOTO</text>
+        <text x="800" y="650" font-family="Helvetica, Arial, sans-serif" font-size="44" fill="#fff" text-anchor="middle">${altEn}</text>
+      </svg>`
+      const data = await sharp(Buffer.from(svg)).jpeg({ quality: 82 }).toBuffer()
+      const doc = await payload.create({
+        collection: 'media',
+        locale: 'en',
+        data: { alt: `${altEn} (temporary photo)`, showInGallery: true, galleryCategory: category as never, usageRights: 'Generated placeholder — replace before go-live' },
+        file: { data, mimetype: 'image/jpeg', name: `temp-gallery-${i + 1}.jpg`, size: data.length },
+      })
+      await payload.update({ collection: 'media', id: doc.id, locale: 'id', data: { alt: `${altId} (foto sementara)` } })
+    }
+    log(`${galleryPhotos.length} gallery placeholder photos`)
+  }
 
   // ── Menu ─────────────────────────────────────────────────────────────────────
   const menu: [Data, Data][] = [

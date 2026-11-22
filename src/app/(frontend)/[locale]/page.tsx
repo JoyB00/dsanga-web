@@ -64,6 +64,8 @@ export default async function HomePage({ params }: Props) {
     getFaqs(locale, ['general']),
   ])
   const wa = settings?.whatsappNumber
+  // Home shows the six experiences from spec §5; other activities live on the Activities page.
+  const homeExperiences = experiences.filter((exp) => exp.key in EXPERIENCE_TARGETS)
   const highlights = [...offers.map((o) => ({ kind: 'offer' as const, doc: o })), ...events.map((e) => ({ kind: 'event' as const, doc: e }))].slice(0, 3)
   const values = [
     { icon: Leaf, label: t.home.values.nature },
@@ -96,7 +98,7 @@ export default async function HomePage({ params }: Props) {
       {/* 3 · Experience icon row */}
       <section id="experiences" aria-label={t.home.experiencesEyebrow} className="border-y border-border bg-surface">
         <ul className="container-content grid grid-cols-3 gap-2 py-8 lg:grid-cols-6">
-          {experiences.map((exp) => {
+          {homeExperiences.map((exp) => {
             const target = EXPERIENCE_TARGETS[exp.key] ?? { route: 'activities' as const, icon: Leaf }
             const Icon = target.icon
             return (
@@ -130,7 +132,7 @@ export default async function HomePage({ params }: Props) {
         }
       >
         <ul className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-          {experiences
+          {homeExperiences
             .filter((exp) => exp.key !== 'coffee')
             .map((exp) => {
               const target = EXPERIENCE_TARGETS[exp.key] ?? { route: 'activities' as const }

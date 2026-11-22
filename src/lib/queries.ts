@@ -69,6 +69,37 @@ export const getUpcomingEvents = cache(async (locale: Locale, limit = 6) => {
   return docs
 })
 
+export const getActivities = cache(async (locale: Locale) => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'experiences',
+    ...base(locale),
+    where: { type: { equals: 'activity' } },
+    sort: 'order',
+    limit: 50,
+  })
+  return docs
+})
+
+/** Events whose start date has passed — the archive (F-13). */
+export const getPastEvents = cache(async (locale: Locale, limit = 8) => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'events',
+    ...base(locale),
+    where: { startsAt: { less_than: new Date().toISOString() } },
+    sort: '-startsAt',
+    limit,
+  })
+  return docs
+})
+
+export const getVenuePackages = cache(async (locale: Locale) => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({ collection: 'venue-packages', ...base(locale), sort: 'order', limit: 20 })
+  return docs
+})
+
 export const getGalleryMedia = cache(async (locale: Locale, limit = 6) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
