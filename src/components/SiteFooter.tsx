@@ -4,6 +4,7 @@ import type { SiteSetting } from '../payload-types'
 import { href, type Locale, type RouteKey } from '../i18n/config'
 import { getDictionary } from '../i18n/dictionaries'
 import { CookieSettingsButton } from './Analytics'
+import { temp } from '@/lib/verification'
 
 const EXPLORE: RouteKey[] = ['pool', 'dining', 'workSpace', 'activities', 'events']
 const INFO: RouteKey[] = ['about', 'gallery', 'offers', 'visit', 'contact', 'privacy']
@@ -17,7 +18,7 @@ export function SiteFooter({ locale, settings, analyticsEnabled }: Props) {
   return (
     <footer className="bg-primary text-background">
       <div className="container-content grid gap-8 py-14 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2 text-small">
+        <div {...temp(settings)} className="flex flex-col gap-2 text-small">
           <span className="text-xl font-extrabold tracking-[0.08em]">D’SANGA</span>
           <span className="text-[10px] font-bold tracking-[0.16em] text-accent-on-dark uppercase">{t.brandTagline}</span>
           {settings?.address && <p className="mt-2 whitespace-pre-line">{settings.address}</p>}

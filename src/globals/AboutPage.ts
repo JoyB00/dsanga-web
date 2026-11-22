@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { hasRole } from '../access/roles'
+import { governanceFields } from '../fields/governance'
 import { iconField } from '../fields/icons'
 import { requireBothLocalesGlobal } from '../hooks/requireBothLocales'
 
@@ -54,5 +55,7 @@ export const AboutPage: GlobalConfig = {
       ],
     },
     { name: 'cta', label: 'Closing call to action', type: 'group', fields: [text('title'), { name: 'text', type: 'textarea', localized: true }] },
+    // F-15: temporary data marker + person in charge.
+    ...governanceFields,
   ],
 }

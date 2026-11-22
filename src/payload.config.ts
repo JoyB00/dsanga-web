@@ -24,8 +24,10 @@ import { PrivacyPage } from './globals/PrivacyPage'
 import { SiteSettings } from './globals/SiteSettings'
 import { requireBothLocales, requireBothLocalesGlobal } from './hooks/requireBothLocales'
 import { withRevalidate, withRevalidateGlobal } from './hooks/revalidate'
+import { withAuditGlobal } from './hooks/auditLog'
 import { emailAdapter } from './integrations/email'
 import { storagePlugin } from './integrations/storage'
+import { expiryReminderTask } from './lib/reminders'
 import type { CollectionConfig, GlobalConfig } from 'payload'
 
 /** F-08: required text that must exist in both languages before publishing. */
@@ -37,6 +39,14 @@ const withBilingualGlobal = (config: GlobalConfig, fields: string[]): GlobalConf
   ...config,
   hooks: { ...config.hooks, beforeChange: [...(config.hooks?.beforeChange ?? []), requireBothLocalesGlobal(fields)] },
 })
+
+/** F-01: editors can schedule publish / unpublish on everything that has drafts (runs via the jobs queue). */
+const withSchedulePublish = <T extends CollectionConfig | GlobalConfig>(config: T): T => {
+  const versions = config.versions
+  if (!versions || typeof versions !== 'object' || !versions.drafts) return config
+  const drafts = typeof versions.drafts === 'object' ? versions.drafts : {}
+  return { ...config, versions: { ...versions, drafts: { ...drafts, schedulePublish: { timeFormat: 'HH:mm' } } } }
+}
 
 /** Public content: bilingual publish check (where not built in) + on-demand page refresh. */
 const contentCollections = [
@@ -50,8 +60,12 @@ const contentCollections = [
   Media,
   Documents,
 ].map(withRevalidate)
+  .map(withSchedulePublish)
 
-const contentGlobals = [withBilingualGlobal(SiteSettings, ['address']), HomePage, AboutPage, PrivacyPage].map(withRevalidateGlobal)
+const contentGlobals = [withBilingualGlobal(SiteSettings, ['address']), HomePage, AboutPage, PrivacyPage]
+  .map(withRevalidateGlobal)
+  .map(withAuditGlobal)
+  .map(withSchedulePublish)
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -65,6 +79,14 @@ export default buildConfig({
     },
     meta: {
       titleSuffix: '— D’Sanga CMS',
+    },
+    components: {
+      // F-15: temporary-data status on the dashboard.
+      beforeDashboard: [
+        '/components/admin/VerificationStatus#VerificationStatus',
+        // F-13: offers ending soon.
+        '/components/admin/ExpiringSoon#ExpiringSoon',
+      ],
     },
   },
   // F-08: English is the default language, Indonesian is a full second language. No silent fallback.
@@ -80,6 +102,16 @@ export default buildConfig({
   globals: contentGlobals,
   editor: lexicalEditor(),
   email: emailAdapter,
+  // Background jobs: scheduled publish / unpublish (F-01) every minute, expiry reminder (F-13) daily.
+  // Runs inside the web server process (Docker/VPS). JOBS_AUTORUN=false turns it off (tests, extra instances).
+  jobs: {
+    tasks: [expiryReminderTask],
+    autoRun: [
+      { cron: '0 * * * * *', queue: 'default' },
+      { cron: '0 */10 * * * *', queue: 'daily' },
+    ],
+    shouldAutoRun: () => process.env.JOBS_AUTORUN !== 'false',
+  },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

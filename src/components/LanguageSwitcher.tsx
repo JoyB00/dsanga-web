@@ -25,13 +25,14 @@ export function LanguageSwitcher({ locale, label }: { locale: Locale; label: str
         // No prefetch: the cookie must be set (on click) before the target page is requested.
         prefetch={false}
         lang={target}
-        aria-label={label}
         onClick={() => {
           document.cookie = `NEXT_LOCALE=${target}; path=/; max-age=31536000; samesite=lax`
         }}
         className="inline-flex min-h-touch min-w-touch items-center justify-center font-semibold text-muted-foreground no-underline hover:text-primary"
       >
+        {/* Visible code + full language name for screen readers: "ID, Bahasa Indonesia" (WCAG 2.5.3). */}
         {target.toUpperCase()}
+        <span className="sr-only">, {label}</span>
       </Link>
     </div>
   )

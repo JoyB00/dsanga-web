@@ -34,7 +34,11 @@ pnpm dev
 | `pnpm generate:types` | Regenerate `src/payload-types.ts` after changing collections. |
 | `pnpm generate:importmap` | Regenerate the admin import map after adding custom admin components. |
 | `pnpm tokens` | Regenerate `design-tokens.css` from `design/design-tokens.json`. |
-| `pnpm typecheck` · `pnpm lint` · `pnpm test:int` · `pnpm test:e2e` | Checks. |
+| `pnpm typecheck` · `pnpm lint` | Static checks. |
+| `pnpm test:int` | CMS rules through the Local API (F-01, F-08, F-11–F-15) + email unit test. Uses the dev database; test records are named `QA …` / `@qa.test` and removed afterwards. |
+| `pnpm test:e2e` | Browser tests: all 24 pages (status, `lang`, h1, canonical, hreflang, switcher), routing, broken links, 375 px overflow, menu, FAQ, tabs, lightbox, contact form, axe WCAG 2.1 AA, keyboard. Reuses a running `pnpm dev`. |
+| `pnpm lighthouse [url]` | Spec §9 check: Lighthouse mobile on Home, Pool, Dining, Work & Space, Visit Us (EN + ID). Run on a production build; writes `qa/lighthouse/summary.md`. |
+| `pnpm check:golive` | Go-live checklist (F-15 unverified data, contact data, indexing, SMTP, secrets…). Exit code 1 while anything blocks launch. |
 
 ## Project map
 
@@ -68,12 +72,12 @@ src/
 | F-08 publish check | `hooks/requireBothLocales.ts`: publishing is refused until required text exists in English **and** Indonesian (drafts can be saved anytime). Fields per collection are listed in `payload.config.ts` |
 | Editable page copy | Globals **Home page**, **About page**, **Privacy policy** and the **Page headers** collection (Activities, Events, Offers, Gallery, Visit Us, Contact). `i18n/dictionaries.ts` holds UI labels and fallbacks only |
 | §7 roles | `access/roles.ts`, `Users.role`: Super Admin Desa, Approver, Admin Konten, Admin Produk, Viewer |
-| F-01 drafts / versions | `versions.drafts` on content collections |
+| F-01 drafts / versions / schedule | `versions.drafts` on content collections and page globals: version history + restore, **Unpublish** (= archive), and *Schedule publish* (runs via the jobs queue as the user who scheduled it, so F-08 and F-11 still apply) |
 | F-11 approval | `hooks/restrictPublish.ts`: admins can save drafts; only Approver / Super Admin can publish experiences, menu, offers and venue packages |
-| F-12 audit log | `hooks/auditLog.ts` → `audit-logs` (Super Admin only) |
-| F-13 expiry | Offers outside `validFrom`–`validUntil` are hidden by access rules; past events are for the archive |
+| F-12 audit log | `hooks/auditLog.ts` → `audit-logs` (Super Admin only): content, media, **accounts** (email + role, never passwords) and **Site settings / page globals** (`global:<slug>`). Logins are not logged |
+| F-13 expiry | Offers outside `validFrom`–`validUntil` are hidden by access rules; past events move to the archive. Reminder: dashboard panel + daily email (08:00 WITA) listing offers that end within 7 days (`lib/reminders.ts`, recipients in *Site settings › Switches*) |
 | F-14 contact form | `inquiries` collection, honeypot + consent, on/off switch in Site settings |
-| F-15 temporary data | `verified` + `pic` on every record; only approvers can tick `verified` |
+| F-15 temporary data | `verified` + `pic` on every record, page global and photo; only approvers can tick it. Dashboard panel lists what is still temporary; `SHOW_TEMP_MARKERS=true` (staging) outlines it on the site; `pnpm check:golive` fails while any published item is unverified (`lib/verification.ts`) |
 | F-03 WhatsApp | One number in Site settings; buttons hide until a number of 8+ digits is set |
 | F-04 images | Media: WebP output, `thumb` / `card` / `hero` sizes, localized alt text |
 | F-14 email to PIC | `hooks/notifyInquiry.ts`: bilingual email to *Site settings › Switches › Inquiry recipients* (fallback: contact email), Reply-To = visitor. A failed email never loses the message (it is in *Inbox*) |
@@ -96,8 +100,15 @@ src/
 - **Share image:** `public/og-default.jpg` is a temporary brand card, used when a page has no hero photo. Replace it once real photos are approved.
 - **Production database:** dev uses Payload's automatic schema push. Before the first deploy, create migrations (`pnpm payload migrate:create`) and run `pnpm payload migrate` on the server.
 
+## Testing notes
+
+- **e2e browser:** Playwright 1.63 expects its own Chromium build. Either `pnpm exec playwright install chromium`, or point at an installed one: `PLAYWRIGHT_CHROMIUM_PATH=…/Google Chrome for Testing pnpm test:e2e`.
+- **Lighthouse:** run against `pnpm build && pnpm start` with `ALLOW_INDEXING=true`, never `pnpm dev`. `CHROME_PATH` selects the browser. Local `next start` is HTTP/1.1, which makes simulated LCP look worse than staging/production behind HTTP/2.
+- **Background jobs** (scheduled publish, reminders) run inside the web server every minute. Run only one instance with jobs on; set `JOBS_AUTORUN=false` on any extra instance. Tests turn them off automatically.
+- QA results for stage 6: `docs/QA-report.md`.
+
 ## Not done yet
 
-- F-08 for media alt text: uploads require alt text in the current language only.
+- Photo alt text: an upload needs alt text in the language being edited; the second language is enforced by `pnpm check:golive` (not at upload, so one-step uploads still work).
 - Not yet tested against a real R2 bucket, SMTP server or GA4 property (needs the client's or vendor's test accounts). Locally: storage off, emails logged, GA tested with a dummy ID and Google requests blocked.
-- Stage 6 (QA): e2e tests, Lighthouse targets (spec §9), accessibility pass, F-15 unverified-data report. Stage 7: staging deploy, migrations, backups.
+- Stage 7: staging deploy, production migrations, HTTPS, automatic backups + restore test (F-09), re-run Lighthouse on staging over HTTP/2.

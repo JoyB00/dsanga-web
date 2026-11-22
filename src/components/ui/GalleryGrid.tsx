@@ -13,6 +13,8 @@ export type GalleryItem = {
   alt: string
   caption?: string | null
   category?: string | null
+  /** F-15 staging marker, computed on the server. */
+  marker?: { 'data-unverified'?: '' }
 }
 
 type Strings = {
@@ -90,7 +92,7 @@ export function GalleryGrid({ items, t }: { items: GalleryItem[]; t: Strings }) 
 
       <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {visible.map((item, i) => (
-          <li key={item.id}>
+          <li key={item.id} {...item.marker}>
             <button
               type="button"
               onClick={() => open(i)}

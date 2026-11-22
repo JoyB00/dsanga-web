@@ -80,6 +80,7 @@ export interface Config {
     users: User;
     'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -99,6 +100,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -112,12 +114,14 @@ export interface Config {
     'home-page': HomePage;
     'about-page': AboutPage;
     'privacy-page': PrivacyPage;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'privacy-page': PrivacyPageSelect<false> | PrivacyPageSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'id';
   widgets: {
@@ -125,7 +129,14 @@ export interface Config {
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      expiryReminder: TaskExpiryReminder;
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -273,6 +284,14 @@ export interface Media {
    * Photo credit / permission note (spec §9 Kepatuhan).
    */
   usageRights?: string | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -625,6 +644,107 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'expiryReminder' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'expiryReminder' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -914,6 +1034,8 @@ export interface MediaSelect<T extends boolean = true> {
   showInGallery?: T;
   galleryCategory?: T;
   usageRights?: T;
+  verified?: T;
+  pic?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;
@@ -1049,6 +1171,38 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -1133,6 +1287,10 @@ export interface SiteSetting {
    */
   inquiryRecipients?: string | null;
   /**
+   * F-13: who gets the daily email about offers ending within 7 days. Empty = the inquiry recipients above.
+   */
+  reminderRecipients?: string | null;
+  /**
    * F-15: all contact data above is final and approved.
    */
   verified?: boolean | null;
@@ -1182,6 +1340,14 @@ export interface HomePage {
     eyebrow?: string | null;
     title?: string | null;
   };
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1249,6 +1415,14 @@ export interface AboutPage {
     title?: string | null;
     text?: string | null;
   };
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1286,7 +1460,33 @@ export interface PrivacyPage {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
+   */
+  verified?: boolean | null;
+  /**
+   * Person in charge of keeping this information correct.
+   */
+  pic?: string | null;
   _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1323,6 +1523,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   menuPdf?: T;
   contactFormEnabled?: T;
   inquiryRecipients?: T;
+  reminderRecipients?: T;
   verified?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1381,6 +1582,8 @@ export interface HomePageSelect<T extends boolean = true> {
         eyebrow?: T;
         title?: T;
       };
+  verified?: T;
+  pic?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1445,6 +1648,8 @@ export interface AboutPageSelect<T extends boolean = true> {
         title?: T;
         text?: T;
       };
+  verified?: T;
+  pic?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1465,7 +1670,19 @@ export interface PrivacyPageSelect<T extends boolean = true> {
         body?: T;
         id?: T;
       };
+  verified?: T;
+  pic?: T;
   _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1479,6 +1696,59 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpiryReminder".
+ */
+export interface TaskExpiryReminder {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?:
+      | ({
+          relationTo: 'experiences';
+          value: number | Experience;
+        } | null)
+      | ({
+          relationTo: 'menu-items';
+          value: number | MenuItem;
+        } | null)
+      | ({
+          relationTo: 'events';
+          value: number | Event;
+        } | null)
+      | ({
+          relationTo: 'offers';
+          value: number | Offer;
+        } | null)
+      | ({
+          relationTo: 'venue-packages';
+          value: number | VenuePackage;
+        } | null)
+      | ({
+          relationTo: 'faqs';
+          value: number | Faq;
+        } | null)
+      | ({
+          relationTo: 'page-intros';
+          value: number | PageIntro;
+        } | null);
+    global?: ('home-page' | 'about-page' | 'privacy-page') | null;
+    user?: {
+      relationTo: 'users';
+      value: number | User;
+    } | null;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

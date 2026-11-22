@@ -17,6 +17,7 @@ import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getFaqs } from '@/lib/queries'
 import { whatsappUrl } from '@/lib/whatsapp'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -59,6 +60,7 @@ export default async function PoolPage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(pool)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: pool.title }]}
         title={pool.title}
         tagline={pool.tagline}
@@ -78,7 +80,7 @@ export default async function PoolPage({ params }: Props) {
       <div className="container-content -mt-4 pb-4">
         <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {galleryItems.map((media, i) => (
-            <li key={typeof media === 'object' && media ? media.id : i}>
+            <li key={typeof media === 'object' && media ? media.id : i} {...temp(media)}>
               <CmsImage
                 media={media}
                 placeholder={t.pool.galleryPlaceholders[i] ?? t.experience.photo}

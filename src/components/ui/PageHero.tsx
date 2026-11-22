@@ -12,12 +12,14 @@ type Props = {
   actions?: ReactNode
   image?: Media | number | null
   imagePlaceholder: string
+  /** F-15 staging marker, from temp(doc). */
+  'data-unverified'?: ''
 }
 
 /** Inner-page hero from the wireframes: breadcrumb, Caveat title, tagline, intro, CTAs, large photo. */
-export function PageHero({ crumbs, title, tagline, intro, actions, image, imagePlaceholder }: Props) {
+export function PageHero({ crumbs, title, tagline, intro, actions, image, imagePlaceholder, ...marker }: Props) {
   return (
-    <section className="pt-10 pb-12 md:pt-14 md:pb-16">
+    <section {...marker} className="pt-10 pb-12 md:pt-14 md:pb-16">
       <div className="container-content grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         <div className="flex flex-col gap-5">
           <Breadcrumbs crumbs={crumbs} />
@@ -40,9 +42,9 @@ export function PageHero({ crumbs, title, tagline, intro, actions, image, imageP
 }
 
 /** Text-only page header (Visit Us, Contact, Privacy…). */
-export function PageHeader({ crumbs, title, tagline, intro }: Omit<Props, 'image' | 'imagePlaceholder' | 'actions'>) {
+export function PageHeader({ crumbs, title, tagline, intro, ...marker }: Omit<Props, 'image' | 'imagePlaceholder' | 'actions'>) {
   return (
-    <section className="pt-10 pb-8 md:pt-14">
+    <section {...marker} className="pt-10 pb-8 md:pt-14">
       <div className="container-content">
         <div className="flex max-w-3xl flex-col gap-4">
           <Breadcrumbs crumbs={crumbs} />

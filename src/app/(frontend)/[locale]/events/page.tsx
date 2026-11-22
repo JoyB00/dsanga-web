@@ -13,6 +13,7 @@ import { formatDate, formatRupiah, formatTime } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getPastEvents, getUpcomingEvents, getVenuePackages } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -37,6 +38,7 @@ export default async function EventsPage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         tagline={head.tagline}
@@ -64,7 +66,7 @@ export default async function EventsPage({ params }: Props) {
         ) : (
           <ul className="flex flex-col gap-4">
             {upcoming.map((ev) => (
-              <li key={ev.id} className="card flex flex-col gap-5 p-5 md:flex-row md:items-center">
+              <li key={ev.id} {...temp(ev)} className="card flex flex-col gap-5 p-5 md:flex-row md:items-center">
                 <div className="flex shrink-0 items-center gap-4">
                   <div className="flex w-20 flex-col items-center rounded-card border-2 border-primary bg-surface py-2 text-primary">
                     <span className="text-caption font-bold uppercase">{formatDate(ev.startsAt, locale, { weekday: 'short', day: undefined, month: undefined, year: undefined })}</span>
@@ -111,7 +113,7 @@ export default async function EventsPage({ params }: Props) {
         <Section id="private" eyebrow={t.events.privateEyebrow} title={t.events.privateTitle} intro={t.events.privateText}>
           <ul className="grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-5">
             {packages.map((pkg) => (
-              <li key={pkg.id} className="card flex flex-col gap-3 p-6">
+              <li key={pkg.id} {...temp(pkg)} className="card flex flex-col gap-3 p-6">
                 <span className="eyebrow">{t.events.upTo.replace('{n}', String(pkg.capacity))}</span>
                 <h3>{pkg.name}</h3>
                 <p className="text-h3 font-extrabold text-primary">
@@ -142,7 +144,7 @@ export default async function EventsPage({ params }: Props) {
         <Section alt eyebrow={t.events.archiveEyebrow} title={t.events.archiveTitle}>
           <ul className="grid grid-cols-2 gap-5 lg:grid-cols-4">
             {past.map((ev) => (
-              <li key={ev.id} className="flex flex-col gap-2">
+              <li key={ev.id} {...temp(ev)} className="flex flex-col gap-2">
                 <CmsImage media={ev.image} placeholder={ev.title} className="aspect-[4/3] w-full rounded-card" size="thumb" sizes="(min-width: 1024px) 25vw, 50vw" />
                 <strong>{ev.title}</strong>
                 <span className="text-small text-muted-foreground">{formatDate(ev.startsAt, locale)}</span>

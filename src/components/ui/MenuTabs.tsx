@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn'
 export type MenuCategory = {
   id: string
   label: string
-  items: { id: number | string; name: string; description?: string | null; note?: string | null; price: string }[]
+  items: { id: number | string; name: string; description?: string | null; note?: string | null; price: string; marker?: { 'data-unverified'?: '' } }[]
 }
 
 /** Menu category tabs (WAI-ARIA tabs pattern: arrow keys move between tabs). */
@@ -70,7 +70,7 @@ export function MenuTabs({ categories, label }: { categories: MenuCategory[]; la
       >
         <ul>
           {current.items.map((item) => (
-            <li key={item.id} className="flex items-baseline justify-between gap-4 border-b border-border py-4 last:border-0">
+            <li key={item.id} {...item.marker} className="flex items-baseline justify-between gap-4 border-b border-border py-4 last:border-0">
               <div className="flex flex-col gap-1">
                 <span className="font-bold text-foreground">{item.name}</span>
                 {item.description && <span className="text-small text-muted-foreground">{item.description}</span>}

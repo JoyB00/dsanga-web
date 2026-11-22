@@ -13,6 +13,7 @@ import { formatDate, formatRupiah } from '@/lib/format'
 import { getSiteSettings } from '@/lib/payload'
 import { getActiveOffers } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -33,6 +34,7 @@ export default async function OffersPage({ params }: Props) {
   return (
     <>
       <PageHeader
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         intro={head.intro}
@@ -53,7 +55,7 @@ export default async function OffersPage({ params }: Props) {
           ) : (
             <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {offers.map((offer) => (
-                <li key={offer.id} className="card flex flex-col overflow-hidden">
+                <li key={offer.id} {...temp(offer)} className="card flex flex-col overflow-hidden">
                   <CmsImage media={offer.image} placeholder={offer.title} className="aspect-video w-full" sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" />
                   <div className="flex flex-1 flex-col gap-3 p-6">
                     <div className="flex flex-wrap items-center gap-2">

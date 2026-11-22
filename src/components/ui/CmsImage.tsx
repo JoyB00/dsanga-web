@@ -10,6 +10,7 @@ type Props = {
   placeholder: string
   className?: string
   sizes?: string
+  /** Above the fold (hero): load immediately with high priority. */
   priority?: boolean
   size?: 'thumb' | 'card' | 'hero'
 }
@@ -44,7 +45,10 @@ export function CmsImage({ media, placeholder, className, sizes = '100vw', prior
         alt={doc.alt ?? ''}
         fill
         sizes={sizes}
-        priority={priority}
+        // Next 16 deprecated `priority`: above-the-fold photos (the LCP element) load eagerly
+        // with high fetch priority instead.
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         className="object-cover"
         style={doc.focalX != null && doc.focalY != null ? { objectPosition: `${doc.focalX}% ${doc.focalY}%` } : undefined}
       />

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { ROLES, ROLE_LABELS, hasRole, isSuperAdmin, superAdminFieldAccess } from '../access/roles'
+import { auditHooks } from '../hooks/auditLog'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -24,6 +25,8 @@ export const Users: CollectionConfig = {
     },
   },
   hooks: {
+    // F-12: account changes (new users, role changes, deletions) are logged.
+    ...auditHooks,
     beforeChange: [
       // The very first account becomes Super Admin so the project can be bootstrapped.
       async ({ data, operation, req }) => {

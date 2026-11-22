@@ -15,6 +15,7 @@ import { getSiteSettings } from '@/lib/payload'
 import { getFaqs } from '@/lib/queries'
 import type { Faq } from '@/payload-types'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -40,6 +41,7 @@ export default async function VisitPage({ params }: Props) {
     <>
       <LocalBusinessJsonLd locale={locale} settings={settings} description={head.intro} image={head.image} />
       <PageHeader
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         tagline={head.tagline}
@@ -86,7 +88,7 @@ export default async function VisitPage({ params }: Props) {
 
       {/* Opening hours + getting here */}
       <Section alt>
-        <div className="grid gap-10 lg:grid-cols-2">
+        <div {...temp(settings)} className="grid gap-10 lg:grid-cols-2">
           <div className="flex flex-col gap-5">
             <h2>{t.visit.hoursTitle}</h2>
             {!!settings?.openingHours?.length && (

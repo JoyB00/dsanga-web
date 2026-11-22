@@ -155,3 +155,30 @@
 
   .media { @apply overflow-hidden rounded-media bg-placeholder; }
 }
+
+/* F-15 staging marker: content that still uses temporary data (SHOW_TEMP_MARKERS=true only). */
+[data-unverified] {
+  position: relative;
+  outline: 2px dashed var(--color-warm);
+  outline-offset: 3px;
+}
+[data-unverified]::after {
+  content: 'Temporary data';
+  /* Inside the corner: many cards clip overflow, which would cut off a label above the edge. */
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 5;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-warm);
+  color: var(--color-on-warm);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+html:lang(id) [data-unverified]::after {
+  content: 'Data sementara';
+}

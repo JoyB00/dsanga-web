@@ -103,6 +103,23 @@ export const SiteSettings: GlobalConfig = {
               },
             },
             {
+              name: 'reminderRecipients',
+              type: 'text',
+              access: { read: ({ req }) => Boolean(req.user) },
+              validate: (value: string | null | undefined) =>
+                !value ||
+                value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .every((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) ||
+                'Enter email addresses separated by commas.',
+              admin: {
+                description:
+                  'F-13: who gets the daily email about offers ending within 7 days. Empty = the inquiry recipients above.',
+              },
+            },
+            {
               name: 'verified',
               type: 'checkbox',
               defaultValue: false,

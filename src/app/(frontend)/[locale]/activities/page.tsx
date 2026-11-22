@@ -14,6 +14,7 @@ import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getActivities } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -33,6 +34,7 @@ export default async function ActivitiesPage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         tagline={head.tagline}
@@ -50,7 +52,7 @@ export default async function ActivitiesPage({ params }: Props) {
       <Section id="all" alt eyebrow={t.activities.allEyebrow} title={t.activities.allTitle}>
         <ul className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
           {activities.map((act) => (
-            <li key={act.id}>
+            <li key={act.id} {...temp(act)}>
               <a href={`#${act.key}`} className="card-interactive flex h-full flex-col overflow-hidden no-underline">
                 <CmsImage media={act.heroImage} placeholder={act.title} className="aspect-[4/3] w-full" sizes="(min-width: 1024px) 33vw, 50vw" />
                 <div className="flex flex-col gap-2 p-5">
@@ -69,7 +71,7 @@ export default async function ActivitiesPage({ params }: Props) {
         const price = act.prices?.[0]
         const comingSoon = act.availability === 'coming-soon'
         return (
-          <section key={act.id} id={act.key} className={i % 2 ? 'section section-alt scroll-mt-24' : 'section scroll-mt-24'}>
+          <section key={act.id} id={act.key} {...temp(act)} className={i % 2 ? 'section section-alt scroll-mt-24' : 'section scroll-mt-24'}>
             <div className="container-content grid items-start gap-10 lg:grid-cols-2">
               <CmsImage
                 media={act.heroImage}

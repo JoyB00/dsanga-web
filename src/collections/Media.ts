@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, canEditMedia } from '../access/roles'
+import { governanceFields } from '../fields/governance'
 import { auditHooks } from '../hooks/auditLog'
 
 export const GALLERY_CATEGORIES = [
@@ -26,6 +27,8 @@ export const Media: CollectionConfig = {
     mimeTypes: ['image/*'],
     // F-04 / §9 performance: WebP output and responsive sizes.
     formatOptions: { format: 'webp', options: { quality: 80 } },
+    // Camera originals (4000+ px) are scaled down on upload; the site never needs more than 2560 px.
+    resizeOptions: { width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true },
     imageSizes: [
       { name: 'thumb', width: 480, formatOptions: { format: 'webp', options: { quality: 75 } } },
       { name: 'card', width: 960, formatOptions: { format: 'webp', options: { quality: 78 } } },
@@ -59,5 +62,7 @@ export const Media: CollectionConfig = {
       type: 'text',
       admin: { position: 'sidebar', description: 'Photo credit / permission note (spec §9 Kepatuhan).' },
     },
+    // F-15: temporary data marker + person in charge.
+    ...governanceFields,
   ],
 }

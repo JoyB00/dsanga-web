@@ -3,14 +3,18 @@
 import { Caveat, Nunito_Sans } from "next/font/google";
 
 export const caveat = Caveat({
-  subsets: ["latin", "latin-ext"],
+  // Preload basic Latin only (EN + ID, incl. ’ and –). latin-ext still loads on demand if ever needed;
+  // preloading it slowed the hero photo (LCP) on mobile.
+  subsets: ["latin"],
   weight: ["600", "700"],
   display: "swap",
   variable: "--font-caveat",
 });
 
 export const nunitoSans = Nunito_Sans({
-  subsets: ["latin", "latin-ext"],
+  // Preload basic Latin only (EN + ID, incl. ’ and –). latin-ext still loads on demand if ever needed;
+  // preloading it slowed the hero photo (LCP) on mobile.
+  subsets: ["latin"],
   weight: ["400", "600", "700", "800"],
   display: "swap",
   variable: "--font-nunito-sans",

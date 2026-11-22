@@ -8,6 +8,7 @@ import { getPageHead } from '@/lib/pageHead'
 import { mediaSrc } from '@/lib/media'
 import { getGalleryMedia } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -32,11 +33,13 @@ export default async function GalleryPage({ params }: Props) {
       alt: m.alt,
       caption: m.caption,
       category: m.galleryCategory,
+      marker: temp(m),
     }))
 
   return (
     <>
       <PageHeader
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         intro={head.intro}

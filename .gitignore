@@ -54,3 +54,6 @@ node_modules/
 
 # Payload document uploads (local dev)
 /documents
+
+# Lighthouse raw reports (summary.md is kept)
+/qa/lighthouse/*.json

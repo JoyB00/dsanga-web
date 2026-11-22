@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { hasRole } from '../access/roles'
+import { governanceFields } from '../fields/governance'
 import { iconField } from '../fields/icons'
 import { requireBothLocalesGlobal } from '../hooks/requireBothLocales'
 
@@ -55,5 +56,7 @@ export const HomePage: GlobalConfig = {
     },
     { name: 'gallery', type: 'group', fields: [text('eyebrow'), text('title')] },
     { name: 'visit', label: 'Plan your visit section', type: 'group', fields: [text('eyebrow'), text('title')] },
+    // F-15: temporary data marker + person in charge.
+    ...governanceFields,
   ],
 }

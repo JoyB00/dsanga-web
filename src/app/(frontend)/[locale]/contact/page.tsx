@@ -13,6 +13,7 @@ import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { whatsappUrl } from '@/lib/whatsapp'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -39,13 +40,14 @@ export default async function ContactPage({ params }: Props) {
   return (
     <>
       <PageHeader
+        {...temp(head)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: head.title }]}
         title={head.title}
         intro={head.intro}
       />
 
       <section className="pb-section-mobile md:pb-section">
-        <ul className="container-content grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ul {...temp(settings)} className="container-content grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {wa && (
             <li>
               <a href={wa} target="_blank" rel="noopener noreferrer" data-track="whatsapp_click" className="card-interactive flex h-full flex-col gap-3 border-2 border-primary p-6 no-underline">

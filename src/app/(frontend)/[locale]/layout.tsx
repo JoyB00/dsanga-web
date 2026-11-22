@@ -11,6 +11,7 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { Analytics } from '@/components/Analytics'
 import { getSiteSettings } from '@/lib/payload'
 import { indexingAllowed, SITE_NAME, siteUrl } from '@/lib/seo'
+import { showTempMarkers } from '@/lib/verification'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -57,6 +58,9 @@ export default async function LocaleLayout({
         >
           {t.skipToContent}
         </a>
+        {showTempMarkers() && (
+          <p className="bg-warm px-4 py-2 text-center text-caption font-bold text-on-warm">{t.staging}</p>
+        )}
         <SiteHeader locale={locale} whatsappNumber={settings?.whatsappNumber} />
         <main id="main" tabIndex={-1} className="flex-1">
           {children}

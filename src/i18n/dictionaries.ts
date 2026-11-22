@@ -303,6 +303,7 @@ const en = {
     more: 'Privacy policy',
     settings: 'Cookie settings',
   },
+  staging: 'Staging site. Items with a dashed outline use temporary data and must be verified before go-live (F-15).',
 }
 
 type Dictionary = typeof en
@@ -610,6 +611,7 @@ const id: Dictionary = {
     more: 'Kebijakan privasi',
     settings: 'Pengaturan cookie',
   },
+  staging: 'Situs staging. Item bergaris putus-putus memakai data sementara dan wajib diverifikasi sebelum go-live (F-15).',
 }
 
 const dictionaries: Record<Locale, Dictionary> = { en, id }

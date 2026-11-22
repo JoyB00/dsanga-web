@@ -25,5 +25,7 @@ export const getPageHead = cache(async (key: PageIntroKey, locale: Locale) => {
     tagline: intro?.tagline || fallback[key].tagline,
     intro: intro?.intro || fallback[key].intro,
     image: intro?.heroImage,
+    // F-15: built-in fallback text counts as temporary too.
+    verified: Boolean(intro?.verified),
   }
 })

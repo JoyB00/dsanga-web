@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { hasRole } from '../access/roles'
+import { governanceFields } from '../fields/governance'
 import { requireBothLocalesGlobal } from '../hooks/requireBothLocales'
 
 /** Privacy policy text (spec §4, §9 Kepatuhan). Final wording is approved by the pengelola. */
@@ -33,5 +34,7 @@ export const PrivacyPage: GlobalConfig = {
         { name: 'body', type: 'richText', localized: true, required: true },
       ],
     },
+    // F-15: temporary data marker + person in charge.
+    ...governanceFields,
   ],
 }

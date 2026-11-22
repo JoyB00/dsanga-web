@@ -31,6 +31,7 @@ import { getSiteSettings } from '@/lib/payload'
 import { iconFor } from '@/lib/icons'
 import { getActiveOffers, getExperiences, getFaqs, getGalleryMedia, getHomePage, getUpcomingEvents } from '@/lib/queries'
 import { pageMetadata, SITE_NAME } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -115,7 +116,7 @@ export default async function HomePage({ params }: Props) {
       {/* 2 · Hero */}
       <section className="pt-8 pb-12 md:pt-12 md:pb-16">
         <div className="container-content grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-          <div className="flex flex-col items-start gap-5">
+          <div {...temp(home)} className="flex flex-col items-start gap-5">
             <span className="eyebrow">{copy.eyebrow}</span>
             <h1>{copy.title}</h1>
             <p className="max-w-xl text-body-lg text-muted-foreground">{copy.intro}</p>
@@ -145,7 +146,7 @@ export default async function HomePage({ params }: Props) {
             const target = EXPERIENCE_TARGETS[exp.key] ?? { route: 'activities' as const, icon: Leaf }
             const Icon = target.icon
             return (
-              <li key={exp.id}>
+              <li key={exp.id} {...temp(exp)}>
                 <Link
                   href={href(target.route, locale, target.hash)}
                   className="flex h-full flex-col items-center gap-2 rounded-card p-3 text-center no-underline hover:bg-highlight/50"
@@ -180,7 +181,7 @@ export default async function HomePage({ params }: Props) {
             .map((exp) => {
               const target = EXPERIENCE_TARGETS[exp.key] ?? { route: 'activities' as const }
               return (
-                <li key={exp.id}>
+                <li key={exp.id} {...temp(exp)}>
                   <Link href={href(target.route, locale, target.hash)} className="group flex flex-col gap-3 no-underline">
                     <CmsImage
                       media={exp.heroImage}
@@ -219,7 +220,7 @@ export default async function HomePage({ params }: Props) {
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {highlights.map((item) =>
               item.kind === 'offer' ? (
-                <li key={`o-${item.doc.id}`} className="card flex flex-col overflow-hidden">
+                <li key={`o-${item.doc.id}`} {...temp(item.doc)} className="card flex flex-col overflow-hidden">
                   <CmsImage media={item.doc.image} placeholder={item.doc.title} className="aspect-video w-full" sizes="(min-width: 1024px) 33vw, 100vw" />
                   <div className="flex flex-1 flex-col gap-3 p-6">
                     <span className="badge-validity self-start">
@@ -232,7 +233,7 @@ export default async function HomePage({ params }: Props) {
                   </div>
                 </li>
               ) : (
-                <li key={`e-${item.doc.id}`} className="card flex flex-col overflow-hidden">
+                <li key={`e-${item.doc.id}`} {...temp(item.doc)} className="card flex flex-col overflow-hidden">
                   <CmsImage media={item.doc.image} placeholder={item.doc.title} className="aspect-video w-full" sizes="(min-width: 1024px) 33vw, 100vw" />
                   <div className="flex flex-1 flex-col gap-3 p-6">
                     <span className="badge-tag self-start">
@@ -296,7 +297,7 @@ export default async function HomePage({ params }: Props) {
         >
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
             {gallery.map((m) => (
-              <li key={m.id}>
+              <li key={m.id} {...temp(m)}>
                 <CmsImage media={m} placeholder="" size="card" sizes="(min-width: 768px) 33vw, 50vw" className="aspect-square w-full rounded-card" />
               </li>
             ))}
@@ -318,7 +319,7 @@ export default async function HomePage({ params }: Props) {
           ) : (
             <CmsImage placeholder={t.home.mapPlaceholder} className="aspect-[4/3] w-full rounded-media" />
           )}
-          <div className="flex flex-col gap-5">
+          <div {...temp(settings)} className="flex flex-col gap-5">
             {settings?.address && (
               <p className="flex gap-3">
                 <MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />

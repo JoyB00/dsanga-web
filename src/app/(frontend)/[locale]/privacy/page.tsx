@@ -7,6 +7,7 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { formatDate } from '@/lib/format'
 import { getPrivacyPage } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -40,6 +41,7 @@ export default async function PrivacyPage({ params }: Props) {
   return (
     <>
       <PageHeader
+        {...temp(privacy)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: title }]}
         title={title}
         intro={privacy?.lastUpdated ? `${t.privacy.updated}: ${formatDate(privacy.lastUpdated, locale, { month: 'long' })}` : undefined}

@@ -13,6 +13,7 @@ import { getDictionary } from '@/i18n/dictionaries'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getFaqs } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -59,6 +60,7 @@ export default async function WorkSpacePage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(work)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: work.title }]}
         title={work.title}
         tagline={work.tagline}
@@ -97,7 +99,7 @@ export default async function WorkSpacePage({ params }: Props) {
         <Section id="rates" eyebrow={t.work.ratesEyebrow} title={t.work.ratesTitle}>
           <ul className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
             {rates.map((rate) => (
-              <li key={rate.id ?? rate.label} className="card flex flex-col gap-2 p-6">
+              <li key={rate.id ?? rate.label} {...temp(work)} className="card flex flex-col gap-2 p-6">
                 <h3 className="text-h3">{rate.label}</h3>
                 <p className="text-h3 font-extrabold text-primary">
                   {rate.weekday}

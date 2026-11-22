@@ -14,6 +14,7 @@ import { iconFor } from '@/lib/icons'
 import { getSiteSettings } from '@/lib/payload'
 import { getAboutPage, getGalleryMedia } from '@/lib/queries'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -50,6 +51,7 @@ export default async function AboutPage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(about)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: title }]}
         title={title}
         tagline={about?.hero?.tagline || t.about.tagline}
@@ -70,7 +72,7 @@ export default async function AboutPage({ params }: Props) {
         <div className="container-content -mt-4 pb-4">
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {photos.map((m) => (
-              <li key={m.id}>
+              <li key={m.id} {...temp(m)}>
                 <Link href={href('gallery', locale)} aria-label={`${t.nav.gallery}: ${m.alt}`} className="block">
                   <CmsImage media={m} placeholder="" size="thumb" sizes="(min-width: 768px) 25vw, 50vw" className="aspect-[16/10] w-full rounded-card" />
                 </Link>

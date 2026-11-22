@@ -14,6 +14,7 @@ import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getMenuItems } from '@/lib/queries'
 import type { MenuItem } from '@/payload-types'
 import { pageMetadata } from '@/lib/seo'
+import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -59,6 +60,7 @@ export default async function DiningPage({ params }: Props) {
         description: item.description,
         note: item.dietaryNote,
         price: formatRupiah(item.price),
+        marker: temp(item),
       })),
   })).filter((cat) => cat.items.length > 0)
   const menuPdf = typeof settings?.menuPdf === 'object' && settings.menuPdf ? settings.menuPdf : null
@@ -74,6 +76,7 @@ export default async function DiningPage({ params }: Props) {
   return (
     <>
       <PageHero
+        {...temp(dining)}
         crumbs={[{ label: t.nav.home, href: href('home', locale) }, { label: t.dining.title }]}
         title={t.dining.title}
         tagline={dining?.tagline}
@@ -107,7 +110,7 @@ export default async function DiningPage({ params }: Props) {
         <Section eyebrow={t.dining.signatureEyebrow} title={t.dining.signatureTitle}>
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((item) => (
-              <li key={item.id} className="card flex flex-col overflow-hidden">
+              <li key={item.id} {...temp(item)} className="card flex flex-col overflow-hidden">
                 <CmsImage media={item.image} placeholder={item.name} className="aspect-[4/3] w-full" sizes="(min-width: 1024px) 25vw, 50vw" />
                 <div className="flex flex-col gap-1.5 p-5">
                   <div className="flex items-baseline justify-between gap-3">
@@ -157,7 +160,7 @@ export default async function DiningPage({ params }: Props) {
               {coffeeItems.length > 0 && (
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {coffeeItems.map((item) => (
-                    <li key={item.id} className="card flex items-baseline justify-between gap-3 p-4">
+                    <li key={item.id} {...temp(item)} className="card flex items-baseline justify-between gap-3 p-4">
                       <span>
                         <strong className="block">{item.name}</strong>
                         {item.description && <span className="text-small text-muted-foreground">{item.description}</span>}
