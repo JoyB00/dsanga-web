@@ -131,7 +131,27 @@ test.describe('Interactions', () => {
     const shown = await cards.count()
     expect(shown).toBeGreaterThan(0)
     expect(shown).toBeLessThan(total)
-    await expect(catalog.locator('[aria-live]')).toHaveText(`${shown} shown`)
+    await expect(catalog.locator('[aria-live]')).toHaveText(`${shown} experiences shown`)
+  })
+
+  test('Home shows the active offers and venue packages, and the hero button leads there (layout v3)', async ({ page }) => {
+    const payload = await getPayload({ config })
+    const now = new Date().toISOString()
+    const offers = await payload.find({
+      collection: 'offers',
+      locale: 'en',
+      where: { and: [{ _status: { equals: 'published' } }, { validFrom: { less_than_equal: now } }, { validUntil: { greater_than_equal: now } }] },
+      sort: 'validUntil',
+      limit: 4,
+    })
+    const venues = await payload.find({ collection: 'venue-packages', locale: 'en', where: { _status: { equals: 'published' } } })
+    await page.goto(BASE)
+    await page.getByRole('link', { name: 'See Packages' }).click()
+    await expect(page).toHaveURL(/#packages$/)
+    const section = page.locator('#packages')
+    for (const o of offers.docs) await expect(section.getByRole('heading', { name: o.title })).toBeVisible()
+    for (const v of venues.docs) await expect(section.getByRole('heading', { name: v.name })).toBeVisible()
+    await expect(page.locator('main video, main iframe[src*="youtube"]')).toHaveCount(0)
   })
 
   test('FAQ answers open and close (F-10)', async ({ page }) => {

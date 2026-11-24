@@ -21,6 +21,8 @@ export function Catalog({
   items,
   viewAll,
   mobileLimit,
+  dark,
+  gridClass = 'gap-6 sm:grid-cols-2 lg:grid-cols-3',
 }: {
   filters: Filter[]
   allLabel: string
@@ -29,6 +31,9 @@ export function Catalog({
   items: Item[]
   viewAll?: { label: string; href: string }
   mobileLimit?: number
+  /** On a dark section. */
+  dark?: boolean
+  gridClass?: string
 }) {
   const [active, setActive] = useState('all')
   const visible = active === 'all' ? items : items.filter((i) => i.type === active)
@@ -48,9 +53,13 @@ export function Catalog({
               onClick={() => setActive(f.value)}
               className={cn(
                 'min-h-touch rounded-full border px-5 text-small font-bold transition-colors',
-                active === f.value
-                  ? 'border-primary bg-primary text-on-primary shadow-[0_6px_16px_rgb(31_77_58/0.25)]'
-                  : 'border-border bg-surface text-foreground hover:border-primary hover:text-primary',
+                dark
+                  ? active === f.value
+                    ? 'border-accent-on-dark bg-accent-on-dark text-foreground'
+                    : 'border-white/40 bg-[rgb(0_0_0/0.25)] text-white hover:border-accent-on-dark'
+                  : active === f.value
+                    ? 'border-primary bg-primary text-on-primary shadow-[0_6px_16px_rgb(31_77_58/0.25)]'
+                    : 'border-border bg-surface text-foreground hover:border-primary hover:text-primary',
               )}
             >
               {f.label} ({count(f.value)})
@@ -61,7 +70,7 @@ export function Catalog({
       <p className="sr-only" aria-live="polite">
         {resultsLabel.replace('{n}', String(visible.length))}
       </p>
-      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className={cn('grid', gridClass)}>
         {visible.map((item, index) => (
           <li
             key={item.id}
@@ -74,7 +83,10 @@ export function Catalog({
         ))}
       </ul>
       {viewAll && (
-        <Link href={viewAll.href} className="btn-outline self-center px-8">
+        <Link
+          href={viewAll.href}
+          className={cn(dark ? 'btn-outline-light' : 'btn-outline', 'self-center px-8')}
+        >
           {viewAll.label}
           <ArrowRight className="size-5" aria-hidden="true" />
         </Link>

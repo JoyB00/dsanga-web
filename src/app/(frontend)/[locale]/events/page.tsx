@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
-import { ArrowRight, CircleCheck, Clock, MapPin, Users } from 'lucide-react'
+import { ArrowRight, Clock, MapPin, Users } from 'lucide-react'
 import Link from 'next/link'
 
 import { CmsImage } from '@/components/ui/CmsImage'
+import { VenuePackageCard } from '@/components/ui/PackageCards'
+import { WavePhoto } from '@/components/ui/WavePhoto'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
-import { formatDate, formatRupiah, formatTime } from '@/lib/format'
+import { cn } from '@/lib/cn'
+import { formatDate, formatTime } from '@/lib/format'
 import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getPastEvents, getUpcomingEvents, getVenuePackages } from '@/lib/queries'
@@ -13,6 +16,7 @@ import { PageHero } from '@/components/ui/PageHero'
 import { Section, SectionHeader } from '@/components/ui/Section'
 import { Panel } from '@/components/ui/InfoCard'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
+import { eventPrice } from '@/lib/price'
 import { pageMetadata } from '@/lib/seo'
 import { temp } from '@/lib/verification'
 
@@ -58,6 +62,7 @@ export default async function EventsPage({ params }: Props) {
         tagline={head.tagline}
         intro={head.intro}
         image={head.image}
+        next="alt"
         actions={
           <>
             <a href="#upcoming" className="btn-primary">
@@ -89,36 +94,31 @@ export default async function EventsPage({ params }: Props) {
             <p className="text-muted-foreground">{t.events.noUpcoming}</p>
           </Panel>
         ) : (
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className={cn('grid gap-6 sm:grid-cols-2', upcoming.length > 2 && 'lg:grid-cols-3')}>
             {upcoming.map((ev) => (
               <li
                 key={ev.id}
                 {...temp(ev)}
-                className="group flex flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card"
+                className="group flex flex-col overflow-hidden rounded-card bg-surface shadow-card"
               >
-                <div className="relative">
-                  <div className="zoom-media overflow-hidden">
-                    <CmsImage
-                      media={ev.image}
-                      placeholder={ev.title}
-                      size="card"
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="aspect-[16/10] w-full"
-                    />
-                  </div>
+                <WavePhoto
+                  media={ev.image}
+                  placeholder={ev.title}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                >
                   <div className="absolute top-4 left-4 flex w-16 flex-col items-center rounded-2xl bg-surface py-1.5 text-primary shadow-raised">
-                    <span className="text-[11px] font-bold uppercase">
+                    <span className="text-[12px] font-bold uppercase">
                       {part(ev.startsAt, { weekday: 'short' })}
                     </span>
                     <span className="font-display text-[30px] leading-none font-bold">
                       {part(ev.startsAt, { day: 'numeric' })}
                     </span>
-                    <span className="text-[11px] font-bold uppercase">
+                    <span className="text-[12px] font-bold uppercase">
                       {part(ev.startsAt, { month: 'short' })}
                     </span>
                   </div>
-                </div>
-                <div className="flex flex-1 flex-col gap-2 p-5">
+                </WavePhoto>
+                <div className="relative -mt-px flex flex-1 flex-col gap-2 bg-surface px-5 pt-2 pb-5">
                   <span className="flex items-center gap-1.5 text-caption font-bold tracking-[0.12em] text-accent-text uppercase">
                     <Clock className="size-3.5" aria-hidden="true" />
                     {t.events.categories[ev.category]} · {formatTime(ev.startsAt, locale)}
@@ -140,9 +140,9 @@ export default async function EventsPage({ params }: Props) {
                         {ev.capacity}
                       </span>
                     ) : null}
-                    {ev.price && (
+                    {eventPrice(ev) && (
                       <span className="rounded-full bg-highlight px-2.5 py-1 font-bold text-primary">
-                        {ev.price}
+                        {eventPrice(ev)}
                       </span>
                     )}
                   </p>
@@ -151,8 +151,11 @@ export default async function EventsPage({ params }: Props) {
                       <WhatsAppButton
                         number={wa}
                         locale={locale}
-                        topic={ev.title}
+                        topic={`${ev.title} (${formatDate(ev.startsAt, locale)})`}
+                        intent="join"
+                        askPrice={!eventPrice(ev)}
                         label={t.cta.joinViaWhatsApp}
+                        context={ev.title}
                         className="w-full"
                       />
                     </div>
@@ -166,7 +169,7 @@ export default async function EventsPage({ params }: Props) {
 
       {/* Private events / venue hire: the page's one dark section */}
       {packages.length > 0 && (
-        <Section id="private" tone="dark">
+        <Section id="private" tone="dark" image={packages.at(-1)?.image}>
           <SectionHeader
             dark
             eyebrow={t.events.privateEyebrow}
@@ -175,49 +178,12 @@ export default async function EventsPage({ params }: Props) {
           />
           <ul className="grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-5">
             {packages.map((pkg) => (
-              <li
-                key={pkg.id}
-                {...temp(pkg)}
-                className="flex flex-col gap-3 rounded-card border border-white/10 bg-primary p-6"
-              >
-                <span className="text-[12px] font-bold tracking-[0.16em] text-accent-on-dark uppercase">
-                  {t.events.upTo.replace('{n}', String(pkg.capacity))}
-                </span>
-                <h3 className="text-[26px] leading-tight font-bold text-white">{pkg.name}</h3>
-                <p className="font-display text-[32px] leading-none font-bold text-accent-on-dark">
-                  {pkg.priceFrom != null
-                    ? `${t.events.from} ${formatRupiah(pkg.priceFrom)}`
-                    : t.events.onRequest}
-                </p>
-                {!!pkg.inclusions?.length && (
-                  <ul className="flex flex-col gap-2 border-t border-white/10 pt-3">
-                    {pkg.inclusions.map((inc) => (
-                      <li
-                        key={inc.id ?? inc.label}
-                        className="flex items-start gap-2 text-small text-white/80"
-                      >
-                        <CircleCheck
-                          className="mt-0.5 size-4 shrink-0 text-accent-on-dark"
-                          aria-hidden="true"
-                        />
-                        {inc.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              <li key={pkg.id}>
+                <VenuePackageCard pkg={pkg} locale={locale} whatsapp={wa} full />
               </li>
             ))}
           </ul>
-          <div className="flex flex-col items-center gap-3 text-center">
-            <WhatsAppButton
-              number={wa}
-              locale={locale}
-              topic={t.events.privateEyebrow}
-              label={t.cta.planEvent}
-              variant="gold"
-            />
-            <WhatsAppNotice locale={locale} dark />
-          </div>
+          <WhatsAppNotice locale={locale} dark className="self-center" />
         </Section>
       )}
 

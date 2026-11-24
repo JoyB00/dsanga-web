@@ -76,7 +76,9 @@ export function MenuTabs({ categories, label }: { categories: MenuCategory[]; la
                 {item.description && <span className="text-small text-muted-foreground">{item.description}</span>}
                 {item.note && <span className="text-caption text-muted-foreground">{item.note}</span>}
               </div>
-              <span className="font-bold whitespace-nowrap text-foreground">{item.price}</span>
+              {item.price && (
+                <span className="font-bold whitespace-nowrap text-foreground">{item.price}</span>
+              )}
             </li>
           ))}
         </ul>

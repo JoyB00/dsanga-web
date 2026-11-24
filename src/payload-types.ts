@@ -76,16 +76,24 @@ export interface Config {
     'page-intros': PageIntro;
     media: Media;
     documents: Document;
+    orders: Order;
+    invoices: Invoice;
+    'dining-tables': DiningTable;
     inquiries: Inquiry;
     users: User;
     'audit-logs': AuditLog;
+    counters: Counter;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    orders: {
+      invoices: 'invoices';
+    };
+  };
   collectionsSelect: {
     experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     'menu-items': MenuItemsSelect<false> | MenuItemsSelect<true>;
@@ -96,9 +104,13 @@ export interface Config {
     'page-intros': PageIntrosSelect<false> | PageIntrosSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+    'dining-tables': DiningTablesSelect<false> | DiningTablesSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
+    counters: CountersSelect<false> | CountersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -114,6 +126,7 @@ export interface Config {
     'home-page': HomePage;
     'about-page': AboutPage;
     'privacy-page': PrivacyPage;
+    'invoice-settings': InvoiceSetting;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
@@ -121,6 +134,7 @@ export interface Config {
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'privacy-page': PrivacyPageSelect<false> | PrivacyPageSelect<true>;
+    'invoice-settings': InvoiceSettingsSelect<false> | InvoiceSettingsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'id';
@@ -173,6 +187,10 @@ export interface Experience {
   availability: 'available' | 'coming-soon' | 'hidden';
   order?: number | null;
   /**
+   * Off = the price is hidden and visitors ask for it on WhatsApp. Staff still use it in orders.
+   */
+  showPrice?: boolean | null;
+  /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
    */
   verified?: boolean | null;
@@ -203,6 +221,21 @@ export interface Experience {
   prices?:
     | {
         label: string;
+        /**
+         * Rupiah, no separators.
+         */
+        weekdayAmount?: number | null;
+        /**
+         * Empty = no separate weekend price.
+         */
+        weekendAmount?: number | null;
+        /**
+         * Show as “From Rp…”.
+         */
+        startingFrom?: boolean | null;
+        /**
+         * Only for words instead of a number, e.g. Free.
+         */
         weekday?: string | null;
         weekend?: string | null;
         unit?: string | null;
@@ -348,12 +381,16 @@ export interface MenuItem {
   /**
    * Rupiah, no separators.
    */
-  price: number;
+  price?: number | null;
   dietaryNote?: string | null;
   image?: (number | null) | Media;
   featured?: boolean | null;
   available?: boolean | null;
   order?: number | null;
+  /**
+   * Off = the price is hidden and visitors ask for it on WhatsApp. Staff still use it in orders.
+   */
+  showPrice?: boolean | null;
   /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
    */
@@ -395,11 +432,22 @@ export interface Event {
   } | null;
   image?: (number | null) | Media;
   capacity?: number | null;
+  /**
+   * Rupiah, no separators.
+   */
+  priceAmount?: number | null;
+  /**
+   * Only for words instead of a number, e.g. Free.
+   */
   price?: string | null;
   /**
    * Show "Join via WhatsApp" with the event name as context.
    */
   joinViaWhatsApp?: boolean | null;
+  /**
+   * Off = the price is hidden and visitors ask for it on WhatsApp. Staff still use it in orders.
+   */
+  showPrice?: boolean | null;
   /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
    */
@@ -451,6 +499,10 @@ export interface Offer {
     [k: string]: unknown;
   } | null;
   /**
+   * Off = the price is hidden and visitors ask for it on WhatsApp. Staff still use it in orders.
+   */
+  showPrice?: boolean | null;
+  /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
    */
   verified?: boolean | null;
@@ -479,6 +531,10 @@ export interface VenuePackage {
   name: string;
   capacity: number;
   /**
+   * Photo on the package card (Home). Landscape or portrait.
+   */
+  image?: (number | null) | Media;
+  /**
    * Leave empty for "On request".
    */
   priceFrom?: number | null;
@@ -489,6 +545,10 @@ export interface VenuePackage {
       }[]
     | null;
   order?: number | null;
+  /**
+   * Off = the price is hidden and visitors ask for it on WhatsApp. Staff still use it in orders.
+   */
+  showPrice?: boolean | null;
   /**
    * Unchecked = temporary data (spec §14). Must be checked by an approver before go-live (F-15).
    */
@@ -568,6 +628,144 @@ export interface Document {
   focalY?: number | null;
 }
 /**
+ * Diisi setelah pesanan disepakati dengan customer di WhatsApp.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  /**
+   * Dibuat otomatis saat disimpan.
+   */
+  orderNumber?: string | null;
+  status: 'confirmed' | 'completed' | 'cancelled';
+  type: 'booking' | 'table';
+  customerName: string;
+  /**
+   * Nomor luar negeri: tulis dengan kode negara.
+   */
+  customerWhatsapp: string;
+  customerEmail?: string | null;
+  /**
+   * Dipakai di invoice dan pesan WhatsApp.
+   */
+  language: 'id' | 'en';
+  visitAt: string;
+  people: number;
+  /**
+   * Ditentukan admin. Boleh dikosongkan dulu.
+   */
+  table?: (number | null) | DiningTable;
+  durationMinutes?: number | null;
+  /**
+   * Centang bila meja memang boleh dipakai bersama pesanan lain di jam yang sama.
+   */
+  allowOverlap?: boolean | null;
+  endsAt?: string | null;
+  items?:
+    | {
+        description: string;
+        quantity: number;
+        unit?: string | null;
+        /**
+         * Harga yang disepakati.
+         */
+        unitPrice: number;
+        /**
+         * Dihitung saat disimpan.
+         */
+        amount?: number | null;
+        category?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  discount?: number | null;
+  subtotal?: number | null;
+  /**
+   * Dihitung saat disimpan.
+   */
+  total?: number | null;
+  /**
+   * Tidak tampil di invoice.
+   */
+  internalNotes?: string | null;
+  invoices?: {
+    docs?: (number | Invoice)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dining-tables".
+ */
+export interface DiningTable {
+  id: number;
+  name: string;
+  area: 'restaurant' | 'bistro';
+  capacity: number;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Invoice dibuat dari halaman Pesanan.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices".
+ */
+export interface Invoice {
+  id: number;
+  status: 'unpaid' | 'paid' | 'void';
+  paymentMethod?: ('transfer' | 'qris' | 'cash' | 'card') | null;
+  /**
+   * Kosong = hari ini.
+   */
+  paidAt?: string | null;
+  /**
+   * Tidak tampil di invoice.
+   */
+  paymentReference?: string | null;
+  dueDate?: string | null;
+  voidReason?: string | null;
+  invoiceNumber?: string | null;
+  issuedAt?: string | null;
+  order: number | Order;
+  customerName: string;
+  customerWhatsapp?: string | null;
+  customerEmail?: string | null;
+  language?: ('id' | 'en') | null;
+  items?:
+    | {
+        description?: string | null;
+        quantity?: number | null;
+        unit?: string | null;
+        unitPrice?: number | null;
+        amount?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  subtotal?: number | null;
+  discount?: number | null;
+  total?: number | null;
+  seller?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  token?: string | null;
+  activeOrder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inquiries".
  */
@@ -594,7 +792,7 @@ export interface Inquiry {
 export interface User {
   id: number;
   name: string;
-  role: 'super-admin' | 'approver' | 'content-admin' | 'product-admin' | 'viewer';
+  role: 'super-admin' | 'approver' | 'content-admin' | 'product-admin' | 'order-admin' | 'viewer';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -626,6 +824,17 @@ export interface AuditLog {
   documentId: string;
   summary?: string | null;
   user?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "counters".
+ */
+export interface Counter {
+  id: number;
+  key: string;
+  value: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -791,6 +1000,18 @@ export interface PayloadLockedDocument {
         value: number | Document;
       } | null)
     | ({
+        relationTo: 'orders';
+        value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'invoices';
+        value: number | Invoice;
+      } | null)
+    | ({
+        relationTo: 'dining-tables';
+        value: number | DiningTable;
+      } | null)
+    | ({
         relationTo: 'inquiries';
         value: number | Inquiry;
       } | null)
@@ -801,6 +1022,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-logs';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'counters';
+        value: number | Counter;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -854,6 +1079,7 @@ export interface ExperiencesSelect<T extends boolean = true> {
   type?: T;
   availability?: T;
   order?: T;
+  showPrice?: T;
   verified?: T;
   pic?: T;
   tagline?: T;
@@ -879,6 +1105,9 @@ export interface ExperiencesSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        weekdayAmount?: T;
+        weekendAmount?: T;
+        startingFrom?: T;
         weekday?: T;
         weekend?: T;
         unit?: T;
@@ -914,6 +1143,7 @@ export interface MenuItemsSelect<T extends boolean = true> {
   featured?: T;
   available?: T;
   order?: T;
+  showPrice?: T;
   verified?: T;
   pic?: T;
   updatedAt?: T;
@@ -934,8 +1164,10 @@ export interface EventsSelect<T extends boolean = true> {
   description?: T;
   image?: T;
   capacity?: T;
+  priceAmount?: T;
   price?: T;
   joinViaWhatsApp?: T;
+  showPrice?: T;
   verified?: T;
   pic?: T;
   meta?:
@@ -964,6 +1196,7 @@ export interface OffersSelect<T extends boolean = true> {
   originalPrice?: T;
   priceUnit?: T;
   terms?: T;
+  showPrice?: T;
   verified?: T;
   pic?: T;
   meta?:
@@ -984,6 +1217,7 @@ export interface OffersSelect<T extends boolean = true> {
 export interface VenuePackagesSelect<T extends boolean = true> {
   name?: T;
   capacity?: T;
+  image?: T;
   priceFrom?: T;
   inclusions?:
     | T
@@ -992,6 +1226,7 @@ export interface VenuePackagesSelect<T extends boolean = true> {
         id?: T;
       };
   order?: T;
+  showPrice?: T;
   verified?: T;
   pic?: T;
   updatedAt?: T;
@@ -1111,6 +1346,92 @@ export interface DocumentsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  status?: T;
+  type?: T;
+  customerName?: T;
+  customerWhatsapp?: T;
+  customerEmail?: T;
+  language?: T;
+  visitAt?: T;
+  people?: T;
+  table?: T;
+  durationMinutes?: T;
+  allowOverlap?: T;
+  endsAt?: T;
+  items?:
+    | T
+    | {
+        description?: T;
+        quantity?: T;
+        unit?: T;
+        unitPrice?: T;
+        amount?: T;
+        category?: T;
+        id?: T;
+      };
+  discount?: T;
+  subtotal?: T;
+  total?: T;
+  internalNotes?: T;
+  invoices?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices_select".
+ */
+export interface InvoicesSelect<T extends boolean = true> {
+  status?: T;
+  paymentMethod?: T;
+  paidAt?: T;
+  paymentReference?: T;
+  dueDate?: T;
+  voidReason?: T;
+  invoiceNumber?: T;
+  issuedAt?: T;
+  order?: T;
+  customerName?: T;
+  customerWhatsapp?: T;
+  customerEmail?: T;
+  language?: T;
+  items?:
+    | T
+    | {
+        description?: T;
+        quantity?: T;
+        unit?: T;
+        unitPrice?: T;
+        amount?: T;
+        id?: T;
+      };
+  subtotal?: T;
+  discount?: T;
+  total?: T;
+  seller?: T;
+  token?: T;
+  activeOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dining-tables_select".
+ */
+export interface DiningTablesSelect<T extends boolean = true> {
+  name?: T;
+  area?: T;
+  capacity?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inquiries_select".
  */
 export interface InquiriesSelect<T extends boolean = true> {
@@ -1163,6 +1484,16 @@ export interface AuditLogsSelect<T extends boolean = true> {
   documentId?: T;
   summary?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "counters_select".
+ */
+export interface CountersSelect<T extends boolean = true> {
+  key?: T;
+  value?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1316,14 +1647,25 @@ export interface HomePage {
      */
     titleAccent?: string | null;
     /**
-     * Short italic line under the title. Empty = hidden.
+     * One short sentence under the title. Empty = the intro is shown instead.
      */
     tagline?: string | null;
+    /**
+     * Description for Google and link previews; shown under the title when the tagline is empty.
+     */
     intro: string;
     /**
-     * Full-width photo behind the title: landscape, at least 2400 px wide, calm area in the middle.
+     * Full-screen photo: bright, at least 2400 px wide, calm area at the bottom left for the title. Set the focal point on the photo.
      */
     image?: (number | null) | Media;
+  };
+  /**
+   * Shows the active offers and the venue packages. Hidden when there are none.
+   */
+  packages?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    intro?: string | null;
   };
   experiences: {
     eyebrow?: string | null;
@@ -1343,6 +1685,10 @@ export interface HomePage {
      */
     quote?: string | null;
     image?: (number | null) | Media;
+    /**
+     * Two more photos for the collage next to the text.
+     */
+    photos?: (number | Media)[] | null;
     values?:
       | {
           label: string;
@@ -1368,9 +1714,6 @@ export interface HomePage {
         }[]
       | null;
   };
-  /**
-   * One card per experience type: Pool, Bistro & Coffee, Work & Space, Activities.
-   */
   ways?: {
     eyebrow?: string | null;
     title?: string | null;
@@ -1408,6 +1751,10 @@ export interface HomePage {
   gallery?: {
     eyebrow?: string | null;
     title?: string | null;
+    /**
+     * Eight photos, shown tall, wide, wide, tall, and so on. Phones show the first four. Empty = the newest gallery photos.
+     */
+    photos?: (number | Media)[] | null;
   };
   visit?: {
     eyebrow?: string | null;
@@ -1563,6 +1910,50 @@ export interface PrivacyPage {
   createdAt?: string | null;
 }
 /**
+ * Perubahan hanya berlaku untuk invoice baru.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoice-settings".
+ */
+export interface InvoiceSetting {
+  id: number;
+  businessName: string;
+  /**
+   * Kosong = alamat di Site settings.
+   */
+  address?: string | null;
+  /**
+   * Kosong = nomor WhatsApp di Site settings.
+   */
+  phone?: string | null;
+  /**
+   * Kosong = email di Site settings.
+   */
+  email?: string | null;
+  /**
+   * Kosong = tidak tampil.
+   */
+  taxId?: string | null;
+  /**
+   * Kosong = bagian pembayaran meminta customer menghubungi D’Sanga.
+   */
+  bankAccounts?:
+    | {
+        bank: string;
+        number: string;
+        holder: string;
+        id?: string | null;
+      }[]
+    | null;
+  terms?: string | null;
+  /**
+   * F-15: data invoice sudah final dan disetujui.
+   */
+  verified?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
@@ -1634,6 +2025,13 @@ export interface HomePageSelect<T extends boolean = true> {
         intro?: T;
         image?: T;
       };
+  packages?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        intro?: T;
+      };
   experiences?:
     | T
     | {
@@ -1655,6 +2053,7 @@ export interface HomePageSelect<T extends boolean = true> {
         text?: T;
         quote?: T;
         image?: T;
+        photos?: T;
         values?:
           | T
           | {
@@ -1691,6 +2090,7 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         eyebrow?: T;
         title?: T;
+        photos?: T;
       };
   visit?:
     | T
@@ -1796,6 +2196,30 @@ export interface PrivacyPageSelect<T extends boolean = true> {
   verified?: T;
   pic?: T;
   _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoice-settings_select".
+ */
+export interface InvoiceSettingsSelect<T extends boolean = true> {
+  businessName?: T;
+  address?: T;
+  phone?: T;
+  email?: T;
+  taxId?: T;
+  bankAccounts?:
+    | T
+    | {
+        bank?: T;
+        number?: T;
+        holder?: T;
+        id?: T;
+      };
+  terms?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

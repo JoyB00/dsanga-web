@@ -3,7 +3,7 @@ import { Info } from 'lucide-react'
 import type { Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { cn } from '@/lib/cn'
-import { whatsappUrl } from '@/lib/whatsapp'
+import { whatsappUrl, type WhatsAppIntent } from '@/lib/whatsapp'
 import { WhatsAppIcon } from '../WhatsAppIcon'
 
 const VARIANTS = {
@@ -25,7 +25,13 @@ type Props = {
   locale: Locale
   /** Topic used in the pre-filled message (F-03), e.g. "Pool". */
   topic?: string | null
+  /** What the message asks for; default is a general question. */
+  intent?: WhatsAppIntent
+  /** Bookings: also ask for the price (when it is not shown on the site). */
+  askPrice?: boolean
   label: string
+  /** Extra words for screen readers when several buttons on a page share a label. */
+  context?: string
   variant?: keyof typeof VARIANTS
   className?: string
 }
@@ -35,11 +41,14 @@ export function WhatsAppButton({
   number,
   locale,
   topic,
+  intent,
+  askPrice,
   label,
+  context,
   variant = 'primary',
   className,
 }: Props) {
-  const url = whatsappUrl(number, locale, topic)
+  const url = whatsappUrl(number, locale, topic, { intent, askPrice })
   if (!url) return null
   return (
     <a
@@ -48,11 +57,13 @@ export function WhatsAppButton({
       rel="noopener noreferrer"
       data-track="whatsapp_click"
       data-topic={topic ?? undefined}
+      data-intent={intent}
       data-location={variant === 'floating' ? 'floating' : undefined}
       className={cn(VARIANTS[variant], className)}
     >
       <WhatsAppIcon />
       <span className={variant === 'floating' ? 'max-sm:sr-only' : undefined}>{label}</span>
+      {context && <span className="sr-only">: {context}</span>}
     </a>
   )
 }

@@ -7,19 +7,24 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { AuditLogs } from './collections/AuditLogs'
+import { Counters } from './collections/Counters'
+import { DiningTables } from './collections/DiningTables'
 import { Documents } from './collections/Documents'
 import { Events } from './collections/Events'
 import { Experiences } from './collections/Experiences'
 import { Faqs } from './collections/Faqs'
 import { Inquiries } from './collections/Inquiries'
+import { Invoices } from './collections/Invoices'
 import { Media } from './collections/Media'
 import { MenuItems } from './collections/MenuItems'
 import { Offers } from './collections/Offers'
+import { Orders } from './collections/Orders'
 import { PageIntros } from './collections/PageIntros'
 import { Users } from './collections/Users'
 import { VenuePackages } from './collections/VenuePackages'
 import { AboutPage } from './globals/AboutPage'
 import { HomePage } from './globals/HomePage'
+import { InvoiceSettings } from './globals/InvoiceSettings'
 import { PrivacyPage } from './globals/PrivacyPage'
 import { SiteSettings } from './globals/SiteSettings'
 import { requireBothLocales, requireBothLocalesGlobal } from './hooks/requireBothLocales'
@@ -98,8 +103,8 @@ export default buildConfig({
     defaultLocale: 'en',
     fallback: false,
   },
-  collections: [...contentCollections, Inquiries, Users, AuditLogs],
-  globals: contentGlobals,
+  collections: [...contentCollections, Orders, Invoices, DiningTables, Inquiries, Users, AuditLogs, Counters],
+  globals: [...contentGlobals, withAuditGlobal(InvoiceSettings)],
   editor: lexicalEditor(),
   email: emailAdapter,
   // Background jobs: scheduled publish / unpublish (F-01) every minute, expiry reminder (F-13) daily.

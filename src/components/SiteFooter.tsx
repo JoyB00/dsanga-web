@@ -29,12 +29,12 @@ export function SiteFooter({ locale, settings, description, analyticsEnabled }: 
     'inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-on-dark/15 text-accent-on-dark'
 
   return (
-    <footer className="bg-foreground text-white/80">
+    <footer className="on-dark bg-foreground text-white/80">
       <div className="container-content grid grid-cols-2 gap-x-6 gap-y-10 py-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,2fr)_minmax(0,2fr)_minmax(0,3fr)]">
         <div {...temp(settings)} className="col-span-2 flex flex-col gap-4 lg:col-span-1">
           <div>
             <p className="text-2xl font-extrabold tracking-[0.08em] text-white">D’SANGA</p>
-            <p className="text-[11px] font-bold tracking-[0.18em] text-accent-on-dark uppercase">
+            <p className="text-[12px] font-bold tracking-[0.16em] text-accent-on-dark uppercase">
               {t.brandTagline}
             </p>
             {description && <p className="mt-3 max-w-md text-small">{description}</p>}
@@ -85,12 +85,12 @@ export function SiteFooter({ locale, settings, description, analyticsEnabled }: 
             <h2 className="mb-4 font-sans text-small font-extrabold tracking-[0.14em] text-white uppercase">
               {t.footer[col.key]}
             </h2>
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col lg:gap-1">
               {col.pages.map((key) => (
                 <li key={key}>
                   <Link
                     href={href(key, locale)}
-                    className="inline-flex min-h-9 items-center text-small text-white/80 no-underline hover:text-accent-on-dark"
+                    className="inline-flex min-h-touch items-center text-small lg:min-h-9 text-white/80 no-underline hover:text-accent-on-dark"
                   >
                     {t.nav[key]}
                   </Link>

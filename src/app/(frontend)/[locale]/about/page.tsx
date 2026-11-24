@@ -2,13 +2,14 @@ import type { Metadata } from 'next'
 import { ArrowRight, CircleCheck } from 'lucide-react'
 import Link from 'next/link'
 
-import { CmsImage } from '@/components/ui/CmsImage'
+import { PhotoMosaic } from '@/components/ui/PhotoMosaic'
 import { RichText } from '@/components/ui/RichText'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { iconFor } from '@/lib/icons'
+import { asMedia } from '@/lib/media'
 import { getSiteSettings } from '@/lib/payload'
-import { getAboutPage, getGalleryMedia } from '@/lib/queries'
+import { getAboutPage, getGalleryMedia, getHomePage } from '@/lib/queries'
 import { PageHero } from '@/components/ui/PageHero'
 import { Eyebrow, Section, SectionHeader } from '@/components/ui/Section'
 import { CtaBand } from '@/components/ui/CtaBand'
@@ -35,12 +36,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AboutPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
-  const [about, settings, photos] = await Promise.all([
+  const [about, settings, home, gallery] = await Promise.all([
     getAboutPage(locale),
     getSiteSettings(locale).catch(() => null),
-    getGalleryMedia(locale, 4),
+    getHomePage(locale),
+    getGalleryMedia(locale, 8),
   ])
   const wa = settings?.whatsappNumber
+  // Same hand-picked photos as the Home mosaic.
+  const chosen = asMedia(home?.gallery?.photos)
+  const photos = chosen.length >= 4 ? chosen : gallery
 
   const title = about?.hero?.title || t.about.title
   const storyEyebrow = about?.story?.eyebrow || t.about.storyEyebrow
@@ -70,8 +75,8 @@ export default async function AboutPage({ params }: Props) {
         }
       />
 
-      {/* Story: heading left, text right, "managed by" as a quote card */}
-      <Section id="story" tone="soft">
+      {/* Story: heading left, text right, "managed by" as a quote */}
+      <Section id="story">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex flex-col items-start gap-4">
             <Eyebrow>{storyEyebrow}</Eyebrow>
@@ -81,15 +86,15 @@ export default async function AboutPage({ params }: Props) {
           </div>
           <div className="flex flex-col gap-6">
             {about?.story?.body ? (
-              <RichText data={about.story.body} className="text-body-lg" />
+              <RichText data={about.story.body} className="max-w-[54ch] text-body-lg" />
             ) : (
-              <div className="flex flex-col gap-4 text-body-lg text-muted-foreground">
+              <div className="flex max-w-[54ch] flex-col gap-4 text-body-lg text-muted-foreground">
                 {t.about.story.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
               </div>
             )}
-            <blockquote className="rounded-card border border-border bg-surface p-6 shadow-card">
+            <blockquote className="border-l-4 border-accent pl-6">
               <span className="text-[12px] font-bold tracking-[0.18em] text-accent-text uppercase">
                 {about?.managed?.eyebrow || t.about.managedEyebrow}
               </span>
@@ -104,32 +109,10 @@ export default async function AboutPage({ params }: Props) {
         </div>
       </Section>
 
-      {/* Purpose, next to a staggered photo grid */}
+      {/* Purpose, next to a staggered photo wall */}
       <Section tone="white">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          {photos.length > 0 && (
-            <ul className="grid grid-cols-2 gap-3 pb-6">
-              {photos.map((m, i) => (
-                <li key={m.id} {...temp(m)} className={i % 2 ? 'translate-y-6' : ''}>
-                  <Link
-                    href={href('gallery', locale)}
-                    aria-label={`${t.nav.gallery}: ${m.alt}`}
-                    className="group block"
-                  >
-                    <div className="zoom-media overflow-hidden rounded-card">
-                      <CmsImage
-                        media={m}
-                        placeholder=""
-                        size="card"
-                        sizes="(min-width: 1024px) 25vw, 50vw"
-                        className="aspect-[4/5] w-full"
-                      />
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <PhotoMosaic photos={photos.slice(0, 4)} columns={2} />
           <div className="flex flex-col items-start gap-6">
             <SectionHeader
               center={false}
@@ -156,7 +139,7 @@ export default async function AboutPage({ params }: Props) {
       </Section>
 
       {/* Values: the page's one dark section */}
-      <Section tone="dark">
+      <Section tone="dark" image={photos[4] ?? photos[0]}>
         <SectionHeader
           dark
           eyebrow={about?.values?.eyebrow || t.about.valuesEyebrow}
@@ -166,7 +149,7 @@ export default async function AboutPage({ params }: Props) {
           {values.map(({ title: valueTitle, text, Icon }) => (
             <li
               key={valueTitle}
-              className="flex flex-col gap-3 rounded-card border border-white/10 bg-primary p-6"
+              className="flex flex-col gap-3 rounded-card border border-white/15 bg-primary/90 p-6"
             >
               <span className="inline-flex size-12 items-center justify-center rounded-xl bg-white/8 text-accent-on-dark">
                 <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />

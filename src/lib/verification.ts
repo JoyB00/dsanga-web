@@ -32,6 +32,7 @@ export const VERIFIED_GLOBALS: { slug: GlobalSlug; label: string }[] = [
   { slug: 'home-page', label: 'Home page' },
   { slug: 'about-page', label: 'About page' },
   { slug: 'privacy-page', label: 'Privacy policy' },
+  { slug: 'invoice-settings', label: 'Invoice settings' },
 ]
 
 export type UnverifiedItem = { title: string; adminPath: string }

@@ -1,7 +1,11 @@
 import type { Metadata } from 'next'
 import { Clock, Coffee, Download, Trees, UtensilsCrossed } from 'lucide-react'
 
+import Link from 'next/link'
+
 import { CmsImage } from '@/components/ui/CmsImage'
+import { FactsStrip } from '@/components/ui/FactsStrip'
+import { WavePhoto } from '@/components/ui/WavePhoto'
 import { MenuTabs, type MenuCategory } from '@/components/ui/MenuTabs'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
@@ -70,7 +74,7 @@ export default async function DiningPage({ params }: Props) {
         name: item.name,
         description: item.description,
         note: item.dietaryNote,
-        price: formatRupiah(item.price),
+        price: formatRupiah(item.price), // '' when hidden
         marker: temp(item),
       })),
   })).filter((cat) => cat.items.length > 0)
@@ -79,10 +83,10 @@ export default async function DiningPage({ params }: Props) {
   const hours = dining?.hours?.weekday
 
   const highlights = [
-    { icon: UtensilsCrossed, title: t.dining.highlights.menu },
-    { icon: Coffee, title: t.dining.highlights.coffee },
-    { icon: Trees, title: t.dining.highlights.seating },
-    ...(hours ? [{ icon: Clock, title: `${t.dining.highlights.hours} ${hours}` }] : []),
+    { icon: UtensilsCrossed, value: t.dining.highlights.menu },
+    { icon: Coffee, value: t.dining.highlights.coffee },
+    { icon: Trees, value: t.dining.highlights.seating },
+    ...(hours ? [{ icon: Clock, value: `${t.dining.highlights.hours} ${hours}` }] : []),
   ]
 
   return (
@@ -103,31 +107,15 @@ export default async function DiningPage({ params }: Props) {
               number={wa}
               locale={locale}
               topic={topic}
-              label={t.cta.bookViaWhatsApp}
+              intent="table"
+              label={t.cta.reserveTable}
               variant="glass"
             />
           </>
         }
       />
 
-      <section aria-label={t.dining.title} className="relative z-10 -mt-10">
-        <ul className="container-content grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-          {highlights.map(({ icon: Icon, title }) => (
-            <li
-              key={title}
-              className="flex h-full flex-col items-start gap-2 rounded-card border border-border bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-5"
-            >
-              <span
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-highlight text-primary"
-                aria-hidden="true"
-              >
-                <Icon className="size-5" />
-              </span>
-              <span className="font-bold text-foreground">{title}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <FactsStrip label={t.dining.title} facts={highlights} />
 
       {featured.length > 0 && (
         <Section tone="cream">
@@ -137,24 +125,24 @@ export default async function DiningPage({ params }: Props) {
               <li
                 key={item.id}
                 {...temp(item)}
-                className="group flex flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card"
+                className="group flex flex-col overflow-hidden rounded-card bg-surface shadow-card"
               >
-                <div className="zoom-media overflow-hidden">
-                  <CmsImage
-                    media={item.image}
-                    placeholder={item.name}
-                    className="aspect-[4/3] w-full"
-                    sizes="(min-width: 1024px) 25vw, 50vw"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col gap-1.5 p-5">
+                <WavePhoto
+                  media={item.image}
+                  placeholder={item.name}
+                  className="aspect-[4/3] sm:aspect-square"
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                />
+                <div className="relative -mt-px flex flex-1 flex-col gap-1.5 bg-surface px-5 pt-2 pb-5">
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="text-[22px] leading-tight font-bold text-foreground">
                       {item.name}
                     </h3>
-                    <strong className="whitespace-nowrap text-primary">
-                      {formatRupiah(item.price)}
-                    </strong>
+                    {item.price != null && (
+                      <strong className="whitespace-nowrap text-primary">
+                        {formatRupiah(item.price)}
+                      </strong>
+                    )}
                   </div>
                   {item.description && (
                     <p className="text-small text-muted-foreground">{item.description}</p>
@@ -187,11 +175,12 @@ export default async function DiningPage({ params }: Props) {
         />
         <MenuTabs categories={categories} label={t.dining.menuTitle} />
         <p className="text-small text-muted-foreground">{t.dining.allergyNote}</p>
+        <p className="text-small font-semibold text-foreground">{t.dining.tableNote}</p>
       </Section>
 
       {/* Coffee: the page's one dark section */}
       {coffee && (
-        <Section id="coffee" tone="dark">
+        <Section id="coffee" tone="dark" image={coffee.gallery?.[0]}>
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="group">
               <div className="zoom-media overflow-hidden rounded-media">
@@ -220,7 +209,7 @@ export default async function DiningPage({ params }: Props) {
                     <li
                       key={item.id}
                       {...temp(item)}
-                      className="flex items-baseline justify-between gap-3 rounded-card border border-white/10 bg-primary p-4"
+                      className="flex items-baseline justify-between gap-3 rounded-card border border-white/15 bg-primary/90 p-4"
                     >
                       <span>
                         <strong className="block text-white">{item.name}</strong>
@@ -228,13 +217,25 @@ export default async function DiningPage({ params }: Props) {
                           <span className="text-small text-white/70">{item.description}</span>
                         )}
                       </span>
-                      <span className="font-bold whitespace-nowrap text-accent-on-dark">
-                        {formatRupiah(item.price)}
-                      </span>
+                      {item.price != null && (
+                        <span className="font-bold whitespace-nowrap text-accent-on-dark">
+                          {formatRupiah(item.price)}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
               )}
+              <p className="text-white/80">{t.dining.tableNote}</p>
+              <WhatsAppButton
+                number={wa}
+                locale={locale}
+                topic={coffee.whatsappContext || coffee.title}
+                intent="table"
+                label={t.cta.reserveTable}
+                context={coffee.title}
+                variant="gold"
+              />
             </div>
           </div>
         </Section>
@@ -247,7 +248,7 @@ export default async function DiningPage({ params }: Props) {
             {dining.facilities.map((area, i) => (
               <li
                 key={area.id ?? area.label}
-                className="group relative overflow-hidden rounded-card"
+                className="group relative overflow-hidden rounded-media"
               >
                 <div className="zoom-media">
                   <CmsImage
@@ -270,14 +271,23 @@ export default async function DiningPage({ params }: Props) {
         </Section>
       )}
 
-      <CtaBand locale={locale} title={t.dining.ctaTitle} text={t.dining.ctaText}>
+      <CtaBand
+        locale={locale}
+        image={dining?.gallery?.[1]}
+        title={t.dining.ctaTitle}
+        text={t.dining.ctaText}
+      >
         <WhatsAppButton
           number={wa}
           locale={locale}
           topic={topic}
-          label={t.cta.bookViaWhatsApp}
+          intent="table"
+          label={t.cta.reserveTable}
           variant="gold"
         />
+        <Link href={href('visit', locale)} className="btn-outline-light">
+          {t.home.ctaSecondary}
+        </Link>
       </CtaBand>
     </>
   )

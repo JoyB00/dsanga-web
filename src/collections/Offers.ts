@@ -2,6 +2,7 @@ import type { CollectionConfig, Where } from 'payload'
 
 import { canEditContent } from '../access/roles'
 import { governanceFields } from '../fields/governance'
+import { readPrice, showPriceField } from '../fields/price'
 import { auditHooks } from '../hooks/auditLog'
 import { restrictPublish } from '../hooks/restrictPublish'
 
@@ -54,12 +55,13 @@ export const Offers: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'price', type: 'number', min: 0 },
-        { name: 'originalPrice', type: 'number', min: 0 },
+        { name: 'price', type: 'number', min: 0, access: { read: readPrice } },
+        { name: 'originalPrice', type: 'number', min: 0, access: { read: readPrice } },
         { name: 'priceUnit', type: 'text', localized: true, admin: { placeholder: '/ person' } },
       ],
     },
     { name: 'terms', type: 'richText', localized: true },
+    showPriceField,
     ...governanceFields,
   ],
 }

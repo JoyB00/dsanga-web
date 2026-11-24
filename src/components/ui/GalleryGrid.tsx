@@ -90,14 +90,18 @@ export function GalleryGrid({ items, t }: { items: GalleryItem[]; t: Strings }) 
         </div>
       )}
 
-      <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      <ul className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
         {visible.map((item, i) => (
-          <li key={item.id} {...item.marker}>
+          <li key={item.id} {...item.marker} className="mb-3 break-inside-avoid md:mb-4">
             <button
               type="button"
               onClick={() => open(i)}
               aria-label={`${t.open}: ${item.alt}`}
-              className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-card bg-placeholder"
+              className={cn(
+                'group relative block w-full cursor-zoom-in overflow-hidden rounded-card bg-placeholder',
+                // Same staggered rhythm as the Home photo mosaic.
+                i % 4 === 0 || i % 4 === 3 ? 'aspect-[3/4]' : 'aspect-[4/3]',
+              )}
             >
               <Image
                 src={item.thumb}
@@ -117,7 +121,7 @@ export function GalleryGrid({ items, t }: { items: GalleryItem[]; t: Strings }) 
         onKeyDown={onDialogKey}
         onClick={(e) => e.target === dialog.current && close()}
         aria-label={current?.alt}
-        className="m-auto h-[min(92dvh,56rem)] w-[min(96vw,80rem)] max-w-none rounded-card bg-foreground/95 p-0 text-white backdrop:bg-black/70"
+        className="m-auto h-[min(92dvh,56rem)] w-[min(96vw,80rem)] max-w-none on-dark rounded-card bg-foreground/95 p-0 text-white backdrop:bg-black/70"
       >
         {current && (
           <div className="flex h-full flex-col gap-3 p-4 md:p-6">

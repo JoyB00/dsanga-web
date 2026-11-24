@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import type { Media } from '@/payload-types'
+import { cn } from '@/lib/cn'
 import { CmsImage } from './CmsImage'
 
 export type Chip = { icon?: ReactNode; text: string }
@@ -19,6 +20,7 @@ export function OverlayCard({
   title,
   chips = [],
   badge,
+  wide,
   sizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
   ...marker
 }: {
@@ -29,6 +31,8 @@ export function OverlayCard({
   chips?: Chip[]
   /** e.g. "Coming soon" */
   badge?: string
+  /** Landscape on tablet and up, for rows of two. */
+  wide?: boolean
   sizes?: string
   /** F-15 staging marker, from temp(doc). */
   'data-unverified'?: ''
@@ -37,7 +41,10 @@ export function OverlayCard({
     <Link
       {...marker}
       href={href}
-      className="group relative block aspect-[4/3] overflow-hidden rounded-card bg-primary-hover text-white no-underline shadow-[0_8px_24px_rgb(31_42_36/0.12)] hover:text-white sm:aspect-[4/5]"
+      className={cn(
+        'group relative block aspect-[4/3] overflow-hidden rounded-card bg-primary-hover text-white no-underline shadow-[0_8px_24px_rgb(31_42_36/0.12)] hover:text-white',
+        wide ? 'lg:aspect-[16/9]' : 'sm:aspect-[4/5]',
+      )}
     >
       <div className="zoom-media absolute inset-0">
         <CmsImage media={image} placeholder={title} sizes={sizes} className="size-full" />

@@ -97,6 +97,9 @@
     @apply font-display font-bold text-foreground;
     letter-spacing: -0.02em;
   }
+  /* Progressive: avoids a single word on the last line (browsers without it wrap as usual). */
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
   h1 { @apply text-display-xl lg:text-display-2xl; }
   h2 { @apply text-display-lg lg:text-display-xlg; }
   h3 { @apply text-h3; }
@@ -104,9 +107,17 @@
   a:hover { @apply text-primary-hover; }
 
   :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: var(--ds-focus-ring-width) solid var(--ds-color-ring);
+    outline: var(--ds-focus-ring-width) solid var(--focus-ring);
     outline-offset: var(--ds-focus-ring-offset);
   }
+
+  /* Focus inside a native date field sits in its inner parts, where :focus-visible does not match the input. */
+  input[type='date']:focus-within {
+    outline: var(--ds-focus-ring-width) solid var(--focus-ring);
+    outline-offset: var(--ds-focus-ring-offset);
+  }
+  :where(a, button, summary, label, select, input) { touch-action: manipulation; }
+  :where(button:not(:disabled), summary) { cursor: pointer; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -121,7 +132,8 @@
 /* Base building blocks (Tailwind v4 @utility, so they can be composed with @apply and variants). */
 @utility btn {
   @apply inline-flex min-h-control items-center justify-center gap-2 rounded-full px-6
-         text-body font-bold no-underline transition-colors duration-200
+         text-body font-bold no-underline transition duration-200
+         active:scale-[0.97] motion-reduce:active:scale-100
          disabled:pointer-events-none disabled:opacity-50;
 }
 @utility card {
@@ -157,8 +169,15 @@
 
 /* ── Layout v2 (docs/spec-layout-v2.md) ─────────────────────────────────────── */
 :root {
+  /* Gold #C8963E is only 2.4:1 on cream; the dark gold of the same palette passes 3:1 for focus rings. */
+  --focus-ring: var(--ds-color-accent-text);
   /* Photos slightly less rounded than design system v1 (32px); cards stay 20px. */
   --ds-radius-media: 24px;
+}
+
+/* Dark surfaces: light gold focus ring. */
+.on-dark {
+  --focus-ring: var(--ds-color-accent-on-dark);
 }
 
 .font-display-italic {
@@ -178,6 +197,14 @@
   }
 }
 
+/* Press feedback on cards that are one link (touch has no hover). */
+a.group {
+  transition: scale 150ms ease, box-shadow 200ms ease;
+}
+a.group:active {
+  scale: 0.985;
+}
+
 /* Photo cards: gentle zoom on hover or keyboard focus (§4.4); off with reduced motion (rule above). */
 .zoom-media img {
   transition: transform 300ms ease;
@@ -187,18 +214,57 @@
   transform: scale(1.04);
 }
 
-.scroll-dot {
-  animation: scroll-dot 1.8s ease-in-out infinite;
+/* ── Layout v3 (docs/spec-layout-v3.md) ─────────────────────────────────────── */
+/* Only the text area is shaded, so the hero photo keeps its colours. The top band keeps the header readable. */
+.hero-shade {
+  background:
+    linear-gradient(to top, rgb(10 32 24 / 0.88) 0%, rgb(10 32 24 / 0.7) 36%, rgb(10 32 24 / 0) 62%);
 }
-@keyframes scroll-dot {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  60% { transform: translateY(8px); opacity: 0.2; }
+@media (min-width: 64rem) {
+  .hero-shade {
+    background:
+      linear-gradient(to top, rgb(10 32 24 / 0.45) 0%, rgb(10 32 24 / 0) 60%),
+      radial-gradient(ellipse 72% 78% at 18% 68%, rgb(10 32 24 / 0.84) 0%, rgb(10 32 24 / 0.72) 50%, rgb(10 32 24 / 0) 100%);
+  }
+}
+/* Inner heroes: dark behind the text block on the left, clearing towards the top and the right. */
+.text-shade {
+  background: linear-gradient(to top, rgb(10 32 24 / 0.88) 0%, rgb(10 32 24 / 0.76) 72%, rgb(10 32 24 / 0) 100%);
+}
+@media (min-width: 64rem) {
+  .text-shade {
+    mask-image: linear-gradient(to right, black 45%, rgb(0 0 0 / 0.3) 85%);
+  }
+}
+/* One short settle on load; nothing keeps moving (WCAG 2.2.2). */
+.hero-settle {
+  animation: hero-settle 4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes hero-settle {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+/* Slow drift of the backdrop photo while scrolling, where scroll-driven animations exist. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .drift {
+      animation: drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes drift {
+  from { transform: translateY(-8%); }
+  to { transform: translateY(8%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .group:hover .zoom-media img,
   .group:focus-visible .zoom-media img {
     transform: none;
+  }
+  a.group:active {
+    scale: 1;
   }
 }
 

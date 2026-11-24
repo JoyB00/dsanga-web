@@ -26,6 +26,10 @@ import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { OrderActions as OrderActions_42735e497e40d1f2d21d56bf07558f53 } from '../../../components/admin/OrderActions'
+import { ProductPicker as ProductPicker_3829512a6e2ccef07f6f366be0947478 } from '../../../components/admin/ProductPicker'
+import { RupiahCell as RupiahCell_0c9197df238a2f5599411538fce0dde4 } from '../../../components/admin/RupiahCell'
+import { InvoiceActions as InvoiceActions_9c9c4e03509b19d4dd54eba0e185d3f0 } from '../../../components/admin/InvoiceActions'
 import { VerificationStatus as VerificationStatus_ae26d9f3d9482d3648f1deec9e67f263 } from '../../../components/admin/VerificationStatus'
 import { ExpiringSoon as ExpiringSoon_46abb8fcc29c060c813745075f4e26c2 } from '../../../components/admin/ExpiringSoon'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -61,6 +65,10 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "/components/admin/OrderActions#OrderActions": OrderActions_42735e497e40d1f2d21d56bf07558f53,
+  "/components/admin/ProductPicker#ProductPicker": ProductPicker_3829512a6e2ccef07f6f366be0947478,
+  "/components/admin/RupiahCell#RupiahCell": RupiahCell_0c9197df238a2f5599411538fce0dde4,
+  "/components/admin/InvoiceActions#InvoiceActions": InvoiceActions_9c9c4e03509b19d4dd54eba0e185d3f0,
   "/components/admin/VerificationStatus#VerificationStatus": VerificationStatus_ae26d9f3d9482d3648f1deec9e67f263,
   "/components/admin/ExpiringSoon#ExpiringSoon": ExpiringSoon_46abb8fcc29c060c813745075f4e26c2,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,

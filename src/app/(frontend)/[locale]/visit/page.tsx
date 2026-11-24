@@ -75,8 +75,8 @@ export default async function VisitPage({ params }: Props) {
         }
       />
 
-      {/* Map + address card, pulled up over the hero edge */}
-      <section className="relative z-10 -mt-10">
+      {/* Map + address card over the wave */}
+      <section className="relative z-10 -mt-14 md:-mt-20">
         <div className="container-content grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div className="overflow-hidden rounded-media border-4 border-surface shadow-raised">
             {settings?.mapEmbedUrl ? (
@@ -148,7 +148,7 @@ export default async function VisitPage({ params }: Props) {
                 aria-label={t.visit.hoursTitle}
                 className="overflow-x-auto rounded-card border border-border bg-surface shadow-card"
               >
-                <table className="w-full min-w-[22rem] border-collapse text-left">
+                <table className="tabular-nums w-full min-w-[22rem] border-collapse text-left">
                   <thead>
                     <tr className="bg-highlight">
                       <th scope="col" className="px-4 py-3">

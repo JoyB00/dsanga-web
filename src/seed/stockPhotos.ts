@@ -18,6 +18,8 @@ export type StockPhoto = {
   /** Alt text when the photo differs from the slot's default description */
   en?: string
   id?: string
+  /** Focal point in percent, for photos that are cropped a lot (e.g. a portrait photo in the wide hero). */
+  focal?: { x: number; y: number }
 }
 
 export const STOCK: Record<string, StockPhoto> = {
@@ -49,6 +51,7 @@ export const STOCK: Record<string, StockPhoto> = {
     photographer: 'Ari Kurniawan',
     en: 'A family relaxing by a tropical pool in Bali',
     id: 'Keluarga bersantai di tepi kolam tropis di Bali',
+    focal: { x: 48, y: 64 },
   },
   'family-pool': {
     url: 'https://images.unsplash.com/photo-1721571389052-9f65bc5f24b0',

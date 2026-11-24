@@ -1,6 +1,6 @@
 # D’Sanga Pool, Bistro & Space — website
 
-Public website and CMS for D’Sanga (Desa Sukawati, Bali). Built from *Spesifikasi Website D’Sanga v1.3*, the approved wireframes and the design system v1, with the layout v2 update (`docs/spec-layout-v2.md`: new layout and Cormorant Garamond headings, design system v1 colours).
+Public website and CMS for D’Sanga (Desa Sukawati, Bali). Built from *Spesifikasi Website D’Sanga v1.3*, the approved wireframes and the design system v1, with the layout v2 update (`docs/spec-layout-v2.md`: new layout and Cormorant Garamond headings, design system v1 colours) and the layout v3 update on all pages (`docs/spec-layout-v3.md`).
 
 **Stack:** Next.js 16 (App Router) · Payload CMS 3 (inside the same app) · PostgreSQL · Tailwind CSS v4 · TypeScript.
 
@@ -72,14 +72,15 @@ src/
 | F-08 bilingual, EN default | `localization` in `payload.config.ts` (fallback off) + `proxy.ts` + `i18n/` |
 | F-08 publish check | `hooks/requireBothLocales.ts`: publishing is refused until required text exists in English **and** Indonesian (drafts can be saved anytime). Fields per collection are listed in `payload.config.ts` |
 | Editable page copy | Globals **Home page**, **About page**, **Privacy policy** and the **Page headers** collection (Activities, Events, Offers, Gallery, Visit Us, Contact). `i18n/dictionaries.ts` holds UI labels and fallbacks only |
-| §7 roles | `access/roles.ts`, `Users.role`: Super Admin Desa, Approver, Admin Konten, Admin Produk, Viewer |
+| §7 roles | `access/roles.ts`, `Users.role`: Super Admin Desa, Approver, Admin Konten, Admin Produk, Admin Pesanan, Viewer |
 | F-01 drafts / versions / schedule | `versions.drafts` on content collections and page globals: version history + restore, **Unpublish** (= archive), and *Schedule publish* (runs via the jobs queue as the user who scheduled it, so F-08 and F-11 still apply) |
 | F-11 approval | `hooks/restrictPublish.ts`: admins can save drafts; only Approver / Super Admin can publish experiences, menu, offers and venue packages |
 | F-12 audit log | `hooks/auditLog.ts` → `audit-logs` (Super Admin only): content, media, **accounts** (email + role, never passwords) and **Site settings / page globals** (`global:<slug>`). Logins are not logged |
 | F-13 expiry | Offers outside `validFrom`–`validUntil` are hidden by access rules; past events move to the archive. Reminder: dashboard panel + daily email (08:00 WITA) listing offers that end within 7 days (`lib/reminders.ts`, recipients in *Site settings › Switches*) |
 | F-14 contact form | `inquiries` collection, honeypot + consent, on/off switch in Site settings |
 | F-15 temporary data | `verified` + `pic` on every record, page global and photo; only approvers can tick it. Dashboard panel lists what is still temporary; `SHOW_TEMP_MARKERS=true` (staging) outlines it on the site; `pnpm check:golive` fails while any published item is unverified (`lib/verification.ts`) |
-| F-03 WhatsApp | One number in Site settings; buttons hide until a number of 8+ digits is set |
+| F-03 WhatsApp | One number in Site settings; buttons hide until a number of 8+ digits is set. The message depends on what the button is for (`WhatsAppIntent`) |
+| Orders & invoices (`docs/spec-order-flow.md`) | `collections/Orders`, `Invoices`, `DiningTables`, `Counters`; `endpoints/orders.ts` (price list, issue invoice); `lib/invoice` (view, PDF); public link in `app/(invoice)`; hidden prices in `fields/price.ts` |
 | F-04 images | Media: WebP output, `thumb` / `card` / `hero` sizes, localized alt text |
 | F-14 email to PIC | `hooks/notifyInquiry.ts`: bilingual email to *Site settings › Switches › Inquiry recipients* (fallback: contact email), Reply-To = visitor. A failed email never loses the message (it is in *Inbox*) |
 | §9 SEO dasar | `lib/seo.ts` on every page: title, description, canonical, hreflang en / id / x-default (→ English), Open Graph + Twitter per language. `sitemap.xml` lists all 24 URLs with hreflang |
@@ -100,7 +101,8 @@ src/
 - **R2 setup:** create a bucket and an API token with Object Read & Write, set `S3_*`. For fast public images connect a custom domain (or r2.dev) to the bucket and set `S3_PUBLIC_URL`; without it files are streamed through `/api/media/file/…`. Upload existing local files again after switching (or copy `media/` and `documents/` into the bucket under the same prefixes).
 - **Share image:** `public/og-default.jpg` is a temporary brand card, used when a page has no hero photo. Replace it once real photos are approved.
 - **Layout v2** (`docs/spec-layout-v2.md`): building blocks live in `src/components/ui` — `PageHero` (full-width photo, or a short gradient header when there is no photo), `Section` / `SectionHeader` / `Eyebrow` (tones: cream, white, alt, soft, dark; at most one dark section per page), `OverlayCard` (photo card, the whole card is one link), `Catalog` (filter pills), `InfoCard` / `IconCard` / `Panel`, `CtaBand`; header and footer in `src/components/SiteHeader.tsx` / `SiteFooter.tsx`. The header is fixed, so every page starts with a hero (or the gradient header) that leaves room for it. WhatsApp buttons, including the floating “Ask us” button, stay hidden until a number is set (F-03).
-- **Home copy fields (layout v2):** Home page › Hero › *Title accent* (words at the end of the title shown in gold) and *Tagline*; About › *Quote* and a short text per value; *Four ways section*; *Why D’Sanga section* (hidden without items); *Closing call to action*. Experiences › *Card tag*. All optional and per language.
+- **Layout v3:** `HomeHero` in `src/components/home`; in `src/components/ui` — `PageHero` (wave into the next section, set `next` to that section's tone), `FactsStrip`, `PackageCards` (offers and venue packages, `full` on their own pages), `PhotoMosaic`, `PhotoBackdrop` (dark `Section image` and `CtaBand image`), `WaveCard`, `WavePhoto`, `WaveEdge`.
+- **Home copy fields:** Home page › Hero › *Title accent* (words at the end of the title shown in gold) and *Tagline*; About › *Quote* and a short text per value; *Packages section* (v3); *Photo mosaic › Photos* (v3); *Why D’Sanga section* (hidden without items); *Closing call to action*. Experiences › *Card tag*. All optional and per language.
 - **Production database:** dev uses Payload's automatic schema push. Before the first deploy, create migrations (`pnpm payload migrate:create`) and run `pnpm payload migrate` on the server.
 
 ## Testing notes
@@ -115,4 +117,4 @@ src/
 - Photo alt text: an upload needs alt text in the language being edited; the second language is enforced by `pnpm check:golive` (not at upload, so one-step uploads still work).
 - Not yet tested against a real R2 bucket, SMTP server or GA4 property (needs the client's or vendor's test accounts). Locally: storage off, emails logged, GA tested with a dummy ID and Google requests blocked.
 - Stage 7: staging deploy, production migrations, HTTPS, automatic backups + restore test (F-09), re-run Lighthouse on staging over HTTP/2.
-- Layout v2: the client still has to approve the heading font change (Caveat → Cormorant Garamond) and the draft Home copy for the new fields (tagline, quote, Four ways, Why D’Sanga, closing CTA). The optional “A day at D’Sanga” timeline (spec §6.1 section 4) is not built.
+- Layout v2: the client still has to approve the heading font change (Caveat → Cormorant Garamond) and the draft Home copy for the new fields (tagline, quote, Packages, Why D’Sanga, closing CTA). The optional “A day at D’Sanga” timeline (spec §6.1 section 4) is not built.

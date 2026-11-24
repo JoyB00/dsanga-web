@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 
+import type { Media } from '@/payload-types'
 import { cn } from '@/lib/cn'
+import { PhotoBackdrop } from './PhotoBackdrop'
 
 /** Layout v2 section building blocks (docs/spec-layout-v2.md §4.3, §5). */
 
@@ -58,7 +60,7 @@ export function SectionHeader({
       </h2>
       {intro && (
         <div
-          className={cn('max-w-2xl text-body-lg', dark ? 'text-white/80' : 'text-muted-foreground')}
+          className={cn('max-w-xl text-body-lg', dark ? 'text-white/80' : 'text-muted-foreground')}
         >
           {intro}
         </div>
@@ -80,7 +82,7 @@ const TONES: Record<Tone, string> = {
   white: 'bg-surface',
   alt: 'bg-surface-alt',
   soft: 'bg-linear-to-b from-surface to-background',
-  dark: 'relative overflow-hidden bg-primary-hover text-white',
+  dark: 'on-dark relative isolate overflow-hidden bg-primary-hover text-white',
 }
 
 /**
@@ -91,12 +93,15 @@ export function Section({
   id,
   tone = 'cream',
   label,
+  image,
   className,
   children,
   ...marker
 }: {
   id?: string
   tone?: Tone
+  /** Photo behind a dark section (layout v3). */
+  image?: Media | number | null
   /** Accessible name when the section has no visible heading. */
   label?: string
   className?: string
@@ -111,7 +116,8 @@ export function Section({
       aria-label={label}
       className={cn('scroll-mt-24 py-16 md:py-24', TONES[tone], className)}
     >
-      {tone === 'dark' && (
+      {tone === 'dark' && image && <PhotoBackdrop image={image} />}
+      {tone === 'dark' && !image && (
         <div
           aria-hidden="true"
           className="absolute -top-40 -left-40 size-[480px] rounded-full bg-primary/70 blur-3xl"

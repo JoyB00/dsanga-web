@@ -45,8 +45,7 @@ export default async function ContactPage({ params }: Props) {
   const socials = (['instagram', 'facebook', 'tiktok'] as const)
     .map((network) => ({ network, url: settings?.social?.[network] }))
     .filter((s): s is { network: typeof s.network; url: string } => Boolean(s.url))
-  const card =
-    'flex h-full flex-col gap-3 rounded-card border border-border bg-surface p-6 shadow-card'
+  const card = 'flex h-full flex-col gap-3 rounded-card bg-surface p-6 shadow-card'
   const icon =
     'inline-flex size-12 items-center justify-center rounded-xl bg-highlight text-primary'
 
@@ -152,7 +151,6 @@ export default async function ContactPage({ params }: Props) {
           <Panel>
             {settings?.contactFormEnabled ? (
               <InquiryForm
-                variant="contact"
                 locale={locale}
                 t={t.form}
                 privacyHref={href('privacy', locale)}

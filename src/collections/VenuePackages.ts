@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { canEditContent } from '../access/roles'
 import { governanceFields } from '../fields/governance'
+import { readPrice, showPriceField } from '../fields/price'
 import { auditHooks } from '../hooks/auditLog'
 import { restrictPublish } from '../hooks/restrictPublish'
 
@@ -20,13 +21,15 @@ export const VenuePackages: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true, localized: true },
     { name: 'capacity', type: 'number', required: true, min: 1 },
-    { name: 'priceFrom', type: 'number', min: 0, admin: { description: 'Leave empty for "On request".' } },
+    { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Photo on the package card (Home). Landscape or portrait.' } },
+    { name: 'priceFrom', type: 'number', min: 0, access: { read: readPrice }, admin: { description: 'Leave empty for "On request".' } },
     {
       name: 'inclusions',
       type: 'array',
       fields: [{ name: 'label', type: 'text', required: true, localized: true }],
     },
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
+    showPriceField,
     ...governanceFields,
   ],
 }

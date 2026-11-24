@@ -2,6 +2,7 @@ import type { CollectionConfig, Where } from 'payload'
 
 import { canEditProducts } from '../access/roles'
 import { governanceFields } from '../fields/governance'
+import { readPrice, showPriceField } from '../fields/price'
 import { auditHooks } from '../hooks/auditLog'
 import { restrictPublish } from '../hooks/restrictPublish'
 
@@ -71,6 +72,7 @@ export const Experiences: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
+    showPriceField,
     ...governanceFields,
     {
       type: 'tabs',
@@ -114,9 +116,18 @@ export const Experiences: CollectionConfig = {
               type: 'array',
               fields: [
                 { name: 'label', type: 'text', required: true, localized: true },
-                // Localized because values can be words ("Free" / "Gratis", "On request" / "Sesuai permintaan").
-                { name: 'weekday', type: 'text', localized: true },
-                { name: 'weekend', type: 'text', localized: true },
+                // Numbers, so orders and invoices can use them.
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'weekdayAmount', type: 'number', min: 0, access: { read: readPrice }, admin: { description: 'Rupiah, no separators.' } },
+                    { name: 'weekendAmount', type: 'number', min: 0, access: { read: readPrice }, admin: { description: 'Empty = no separate weekend price.' } },
+                  ],
+                },
+                { name: 'startingFrom', type: 'checkbox', defaultValue: false, admin: { description: 'Show as “From Rp…”.' } },
+                // Words instead of a number ("Free" / "Gratis"), so localized.
+                { name: 'weekday', type: 'text', label: 'Weekday words', localized: true, access: { read: readPrice }, admin: { description: 'Only for words instead of a number, e.g. Free.' } },
+                { name: 'weekend', type: 'text', label: 'Weekend words', localized: true, access: { read: readPrice } },
                 { name: 'unit', type: 'text', localized: true, admin: { placeholder: '/ person' } },
               ],
             },

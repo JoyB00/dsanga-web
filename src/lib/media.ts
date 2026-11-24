@@ -1,3 +1,5 @@
+import type { Media } from '../payload-types'
+
 /**
  * Payload returns absolute media URLs (prefixed with serverURL). next/image only allows our own
  * files as site-relative paths (images.localPatterns in next.config), so strip our own origin.
@@ -20,3 +22,7 @@ export function mediaSrc(url?: string | null, version?: string | null): string |
     return url
   }
 }
+
+/** Populated photos only (a deleted or unreadable photo comes back as an id). */
+export const asMedia = (list?: (number | Media | null)[] | null) =>
+  (list ?? []).filter((m): m is Media => typeof m === 'object' && m !== null)

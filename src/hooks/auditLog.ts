@@ -4,7 +4,7 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, GlobalAfterC
 const summarize = (doc: Record<string, unknown> | undefined): string | undefined => {
   if (!doc) return undefined
   if (typeof doc.email === 'string') return `${doc.email}${doc.role ? ` · ${String(doc.role)}` : ''}`
-  for (const key of ['title', 'name', 'question', 'filename']) if (typeof doc[key] === 'string') return doc[key] as string
+  for (const key of ['title', 'name', 'question', 'filename', 'orderNumber', 'invoiceNumber']) if (typeof doc[key] === 'string') return doc[key] as string
   return undefined
 }
 

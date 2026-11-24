@@ -10,18 +10,21 @@ export function Breadcrumbs({ crumbs, onDark }: { crumbs: Crumb[]; onDark?: bool
       <ol
         className={cn(
           'flex flex-wrap gap-1.5 text-small',
-          onDark ? 'text-white/80' : 'text-muted-foreground',
+          // Own dark pill: the breadcrumb sits where the photo is least shaded.
+          onDark
+            ? 'rounded-full bg-[rgb(10_32_24/0.75)] px-3.5 py-1 text-white/90'
+            : 'text-muted-foreground',
         )}
       >
         {crumbs.map((crumb, i) => (
-          <li key={crumb.label} className="flex gap-1.5">
+          <li key={crumb.label} className="flex items-center gap-1.5">
             {i > 0 && <span aria-hidden="true">/</span>}
             {crumb.href ? (
               <Link
                 href={crumb.href}
                 className={cn(
-                  'underline-offset-4 hover:underline',
-                  onDark ? 'text-white/85 hover:text-white' : 'text-muted-foreground',
+                  'inline-flex min-h-6 items-center underline-offset-4 hover:underline',
+                  onDark ? 'text-white/90 hover:text-white' : 'text-muted-foreground',
                 )}
               >
                 {crumb.label}

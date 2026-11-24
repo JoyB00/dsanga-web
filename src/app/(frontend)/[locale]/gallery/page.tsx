@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { GalleryGrid, type GalleryItem } from '@/components/ui/GalleryGrid'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { mediaSrc } from '@/lib/media'
 import { getPageHead } from '@/lib/pageHead'
-import { getGalleryMedia } from '@/lib/queries'
+import { getSiteSettings } from '@/lib/payload'
+import { getGalleryMedia, getHomePage } from '@/lib/queries'
 import { temp } from '@/lib/verification'
+import { CtaBand } from '@/components/ui/CtaBand'
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { PageHero } from '@/components/ui/PageHero'
 import { Section } from '@/components/ui/Section'
 import { Panel } from '@/components/ui/InfoCard'
@@ -30,7 +34,11 @@ export default async function GalleryPage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
   const head = await getPageHead('gallery', locale)
-  const media = await getGalleryMedia(locale, 120)
+  const [media, home, settings] = await Promise.all([
+    getGalleryMedia(locale, 120),
+    getHomePage(locale),
+    getSiteSettings(locale).catch(() => null),
+  ])
 
   const items: GalleryItem[] = media
     .filter((m) => m.url)
@@ -75,6 +83,25 @@ export default async function GalleryPage({ params }: Props) {
           />
         )}
       </Section>
+
+      <CtaBand
+        locale={locale}
+        showNotice={false}
+        image={head.image}
+        eyebrow={home?.cta?.eyebrow || t.home.ctaEyebrow}
+        title={home?.cta?.title || t.home.ctaTitle}
+        text={home?.cta?.text || t.home.ctaText}
+      >
+        <WhatsAppButton
+          number={settings?.whatsappNumber}
+          locale={locale}
+          label={t.home.chatWhatsApp}
+          variant="gold"
+        />
+        <Link href={href('visit', locale)} className="btn-outline-light">
+          {t.home.ctaSecondary}
+        </Link>
+      </CtaBand>
     </>
   )
 }

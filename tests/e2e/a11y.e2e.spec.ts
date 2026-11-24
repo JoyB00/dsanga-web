@@ -31,6 +31,12 @@ test.describe('Keyboard', () => {
     const skip = page.getByRole('link', { name: 'Skip to main content' })
     await expect(skip).toBeFocused()
     await expect(skip).toBeVisible()
+    // Not covered by the fixed header (WCAG 2.4.11).
+    const onTop = await skip.evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      return el.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2))
+    })
+    expect(onTop).toBe(true)
     await page.keyboard.press('Enter')
     await expect(page.locator('main#main')).toBeFocused()
   })

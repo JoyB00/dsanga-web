@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { canEditProducts } from '../access/roles'
 import { governanceFields } from '../fields/governance'
+import { readPrice, showPriceField } from '../fields/price'
 import { auditHooks } from '../hooks/auditLog'
 import { restrictPublish } from '../hooks/restrictPublish'
 
@@ -37,12 +38,13 @@ export const MenuItems: CollectionConfig = {
         { value: 'desserts', label: 'Desserts' },
       ],
     },
-    { name: 'price', type: 'number', required: true, min: 0, admin: { description: 'Rupiah, no separators.' } },
+    { name: 'price', type: 'number', min: 0, access: { read: readPrice }, admin: { description: 'Rupiah, no separators.' } },
     { name: 'dietaryNote', type: 'text', localized: true, admin: { placeholder: 'Spicy · Contains peanuts' } },
     { name: 'image', type: 'upload', relationTo: 'media' },
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
     { name: 'available', type: 'checkbox', defaultValue: true, admin: { position: 'sidebar' } },
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
+    showPriceField,
     ...governanceFields,
   ],
 }

@@ -89,7 +89,7 @@ async function seedPages(payload: Payload, log: (m: string) => void) {
     data: {
       _status: 'published',
       hero: { eyebrow: en.home.eyebrow, title: en.home.title, titleAccent: en.home.titleAccent, tagline: en.home.tagline, intro: en.home.intro },
-      ways: { eyebrow: en.home.waysEyebrow, title: en.home.waysTitle, intro: en.home.waysIntro },
+      packages: { eyebrow: en.home.packagesEyebrow, title: en.home.packagesTitle, intro: en.home.packagesIntro },
       cta: { eyebrow: en.home.ctaEyebrow, title: en.home.ctaTitle, text: en.home.ctaText },
       experiences: { eyebrow: en.home.experiencesEyebrow, title: en.home.experiencesTitle, intro: en.home.experiencesIntro },
       highlights: { eyebrow: en.home.offersEyebrow, title: en.home.offersTitle },
@@ -116,7 +116,7 @@ async function seedPages(payload: Payload, log: (m: string) => void) {
     data: {
       _status: 'published',
       hero: { eyebrow: id.home.eyebrow, title: id.home.title, titleAccent: id.home.titleAccent, tagline: id.home.tagline, intro: id.home.intro },
-      ways: { eyebrow: id.home.waysEyebrow, title: id.home.waysTitle, intro: id.home.waysIntro },
+      packages: { eyebrow: id.home.packagesEyebrow, title: id.home.packagesTitle, intro: id.home.packagesIntro },
       cta: { eyebrow: id.home.ctaEyebrow, title: id.home.ctaTitle, text: id.home.ctaText },
       experiences: { eyebrow: id.home.experiencesEyebrow, title: id.home.experiencesTitle, intro: id.home.experiencesIntro },
       highlights: { eyebrow: id.home.offersEyebrow, title: id.home.offersTitle },
@@ -282,8 +282,8 @@ async function seed() {
         hours: { weekday: '08.00–18.00', weekend: '07.00–18.00' },
         facilities: [{ label: 'Adult pool' }, { label: 'Children’s pool' }, { label: 'Showers & changing rooms' }, { label: 'Lockers' }],
         prices: [
-          { label: 'Adult', weekday: 'Rp50.000', weekend: 'Rp60.000', unit: '/ person' },
-          { label: 'Child (3–12 years)', weekday: 'Rp30.000', weekend: 'Rp40.000', unit: '/ person' },
+          { label: 'Adult', weekdayAmount: 50000, weekendAmount: 60000, unit: '/ person' },
+          { label: 'Child (3–12 years)', weekdayAmount: 30000, weekendAmount: 40000, unit: '/ person' },
           { label: 'Under 3 years', weekday: 'Free', weekend: 'Free' },
         ],
         rules: rich('Shower before entering the pool. No running, diving or glass near the pool.'),
@@ -316,8 +316,8 @@ async function seed() {
       }),
     },
     {
-      en: { key: 'coffee', type: 'dining', availability: 'available', order: 3, title: 'Coffee', tagline: 'Specialty & Classic', whatsappContext: 'Coffee', summary: 'Single-origin Bali beans for manual brew, classic espresso drinks and traditional kopi Bali.' },
-      id: () => ({ title: 'Coffee', tagline: 'Specialty & Klasik', whatsappContext: 'Coffee', summary: 'Biji kopi single-origin Bali untuk manual brew, espresso klasik, dan kopi Bali tradisional.' }),
+      en: { key: 'coffee', type: 'dining', availability: 'available', order: 3, title: 'Coffee', tagline: 'Specialty & Classic', whatsappContext: 'Restaurant (Coffee & Bar)', summary: 'Single-origin Bali beans for manual brew, classic espresso drinks and traditional kopi Bali.' },
+      id: () => ({ title: 'Coffee', tagline: 'Specialty & Klasik', whatsappContext: 'Restaurant (Coffee & Bar)', summary: 'Biji kopi single-origin Bali untuk manual brew, espresso klasik, dan kopi Bali tradisional.' }),
     },
     {
       en: {
@@ -327,9 +327,9 @@ async function seed() {
         facilities: [{ label: 'Fast Wi-Fi' }, { label: 'Comfortable desks' }, { label: 'Meeting room (optional)' }, { label: 'Coffee & food' }, { label: 'Calm atmosphere' }],
         terms: rich('Desk passes are first come, first served. The meeting room needs confirmation by our staff.'),
         prices: [
-          { label: 'Day pass', weekday: 'Rp75.000', unit: '/ day' },
-          { label: 'Hourly (min. 2 hours)', weekday: 'Rp20.000', unit: '/ hour' },
-          { label: 'Meeting room', weekday: 'Rp150.000', unit: '/ 2 hours' },
+          { label: 'Day pass', weekdayAmount: 75000, unit: '/ day' },
+          { label: 'Hourly (min. 2 hours)', weekdayAmount: 20000, unit: '/ hour' },
+          { label: 'Meeting room', weekdayAmount: 150000, unit: '/ 2 hours' },
         ],
       },
       id: (d) => ({
@@ -366,12 +366,12 @@ async function seed() {
       en: {
         key: 'creative-classes', type: 'activity', availability: 'available', order: 7, title: 'Creative Classes', tagline: 'Painting, crafts & Balinese offerings', whatsappContext: 'Creative Classes',
         summary: 'Small hands-on classes for families and groups. See the Events page for the schedule.',
-        prices: [{ label: 'Class', weekday: 'From Rp75.000', unit: '/ person' }],
+        showPrice: false, prices: [{ label: 'Class', weekdayAmount: 75000, startingFrom: true, unit: '/ person' }],
       },
       id: (d) => ({
         title: 'Kelas Kreatif', tagline: 'Melukis, kerajinan & canang sari', whatsappContext: 'Kelas Kreatif',
         summary: 'Kelas praktik kecil untuk keluarga dan rombongan. Lihat jadwal di halaman Events.',
-        prices: rows(d, 'prices', [{ label: 'Kelas', weekday: 'Mulai Rp75.000', unit: '/ orang' }]),
+        prices: rows(d, 'prices', [{ label: 'Kelas', unit: '/ orang' }]),
       }),
     },
     {
@@ -396,12 +396,12 @@ async function seed() {
     [{ name: 'Grilled Chicken Bowl', description: 'Greens, sambal matah', category: 'mains', price: 65000, featured: true }, { name: 'Grilled Chicken Bowl', description: 'Sayuran, sambal matah' }],
     [{ name: 'Kids Pasta', description: 'Mild tomato sauce', category: 'kids', price: 40000, featured: true }, { name: 'Pasta Anak', description: 'Saus tomat tidak pedas' }],
     [{ name: 'Pisang Goreng', description: 'Palm sugar, coconut', category: 'snacks', price: 30000, featured: true }, { name: 'Pisang Goreng', description: 'Gula aren, kelapa' }],
-    [{ name: 'Kopi Bali', description: 'Traditional brew', category: 'coffee', price: 15000 }, { name: 'Kopi Bali', description: 'Seduhan tradisional' }],
-    [{ name: 'V60 Manual Brew', description: 'Single-origin Kintamani', category: 'coffee', price: 35000 }, { name: 'V60 Manual Brew', description: 'Single-origin Kintamani' }],
-    [{ name: 'Café Latte', description: 'Espresso, steamed milk', category: 'coffee', price: 28000 }, { name: 'Café Latte', description: 'Espresso, susu' }],
+    [{ name: 'Kopi Bali', description: 'Traditional brew', category: 'coffee', showPrice: false, price: 15000 }, { name: 'Kopi Bali', description: 'Seduhan tradisional' }],
+    [{ name: 'V60 Manual Brew', description: 'Single-origin Kintamani', category: 'coffee', showPrice: false, price: 35000 }, { name: 'V60 Manual Brew', description: 'Single-origin Kintamani' }],
+    [{ name: 'Café Latte', description: 'Espresso, steamed milk', category: 'coffee', showPrice: false, price: 28000 }, { name: 'Café Latte', description: 'Espresso, susu' }],
     [{ name: 'Mie Goreng', description: 'Fried noodles, egg, vegetables', category: 'mains', price: 45000 }, { name: 'Mie Goreng', description: 'Mi goreng, telur, sayuran' }],
     [{ name: 'Bubur Injin', description: 'Black rice pudding', category: 'desserts', price: 30000 }, { name: 'Bubur Injin', description: 'Bubur ketan hitam' }],
-    [{ name: 'Fresh Coconut', description: 'Whole young coconut', category: 'drinks', price: 25000 }, { name: 'Kelapa Muda', description: 'Kelapa muda utuh' }],
+    [{ name: 'Fresh Coconut', description: 'Whole young coconut', category: 'drinks', showPrice: false, price: 25000 }, { name: 'Kelapa Muda', description: 'Kelapa muda utuh' }],
   ]
   for (const [i, [en, id]] of menu.entries()) {
     await upsert(payload, 'menu-items', { name: { equals: en.name } }, { ...en, order: i, verified: false, _status: 'published' }, () => id)
@@ -411,7 +411,7 @@ async function seed() {
   // ── Events (one in the past, to show the archive) ───────────────────────────
   const events: [Data, Data][] = [
     [{ title: 'Live Acoustic Evening', category: 'music', startsAt: at(14, '16:00'), location: 'Bistro garden', capacity: 80, price: 'Free entry', summary: 'Local musicians, family-friendly.' }, { title: 'Malam Akustik', location: 'Taman bistro', price: 'Gratis', summary: 'Musisi lokal, ramah keluarga.' }],
-    [{ title: 'Canang Sari Making for Families', category: 'workshop', startsAt: at(21, '09:00'), location: 'Pavilion', capacity: 20, price: 'Rp75.000', summary: 'Learn to make Balinese offerings.' }, { title: 'Membuat Canang Sari Bersama Keluarga', location: 'Pavilion', summary: 'Belajar membuat canang sari.' }],
+    [{ title: 'Canang Sari Making for Families', category: 'workshop', startsAt: at(21, '09:00'), location: 'Pavilion', capacity: 20, priceAmount: 75000, summary: 'Learn to make Balinese offerings.' }, { title: 'Membuat Canang Sari Bersama Keluarga', location: 'Pavilion', summary: 'Belajar membuat canang sari.' }],
     [{ title: 'Sukawati Creative Market #3', category: 'market', startsAt: at(-19, '10:00'), location: 'Whole site', summary: 'Local crafts, food stalls and music.' }, { title: 'Pasar Kreatif Sukawati #3', location: 'Seluruh area', summary: 'Kerajinan lokal, jajanan dan musik.' }],
   ]
   for (const [en, id] of events) {
@@ -421,8 +421,8 @@ async function seed() {
 
   // ── Offers ───────────────────────────────────────────────────────────────────
   const offers: [Data, Data][] = [
-    [{ title: 'Family Weekend Package', category: 'Pool + Dining', validFrom: days(-3), validUntil: days(40), price: 350000, originalPrice: 420000, summary: 'Pool entry for 2 adults + 2 children and a lunch set for four.', terms: rich('Saturdays and Sundays only. Cannot be combined with other offers.') }, { title: 'Paket Akhir Pekan Keluarga', summary: 'Tiket kolam untuk 2 dewasa + 2 anak dan paket makan siang berempat.', terms: rich('Hanya Sabtu dan Minggu. Tidak dapat digabung dengan promo lain.') }],
-    [{ title: 'Work & Coffee Day Pass', category: 'Work & Space', validFrom: days(-1), validUntil: days(55), price: 65000, priceUnit: '/ day', summary: 'Full-day desk with Wi-Fi and two coffees.' }, { title: 'Paket Kerja & Kopi Harian', priceUnit: '/ hari', summary: 'Meja seharian dengan Wi-Fi dan dua kopi.' }],
+    [{ title: 'Family Weekend Package', category: 'Pool + Dining', validFrom: days(-3), validUntil: days(40), price: 350000, originalPrice: 420000, summary: 'Pool entry for 2 adults + 2 children and a lunch set for four.', terms: rich('Saturdays and Sundays only. Cannot be combined with other offers.') }, { title: 'Paket Akhir Pekan Keluarga', category: 'Pool + Bistro', summary: 'Tiket kolam untuk 2 dewasa + 2 anak dan paket makan siang berempat.', terms: rich('Hanya Sabtu dan Minggu. Tidak dapat digabung dengan promo lain.') }],
+    [{ title: 'Work & Coffee Day Pass', category: 'Work & Space', validFrom: days(-1), validUntil: days(55), price: 65000, priceUnit: '/ day', summary: 'Full-day desk with Wi-Fi and two coffees.' }, { title: 'Paket Kerja & Kopi Harian', category: 'Work & Space', priceUnit: '/ hari', summary: 'Meja seharian dengan Wi-Fi dan dua kopi.' }],
   ]
   for (const [en, id] of offers) {
     await upsert(payload, 'offers', { title: { equals: en.title } }, { ...en, verified: false, _status: 'published' }, () => id)
@@ -454,6 +454,26 @@ async function seed() {
     await upsert(payload, 'faqs', { question: { equals: en.question } }, { ...en, order: i, verified: false, _status: 'published' }, () => id)
   }
   log(`${faqs.length} FAQs`)
+
+  // ── Orders: sample tables (real numbers come from the client) and invoice details ──
+  const tables = [
+    ...[1, 2, 3, 4, 5, 6].map((n) => ({ name: `R${n}`, area: 'restaurant', capacity: 4 })),
+    ...[1, 2, 3, 4, 5, 6].map((n) => ({ name: `B${n}`, area: 'bistro', capacity: 4 })),
+  ]
+  for (const table of tables) {
+    await upsert(payload, 'dining-tables', { name: { equals: table.name } }, { ...table, active: true })
+  }
+  await payload.updateGlobal({
+    slug: 'invoice-settings',
+    locale: 'en',
+    data: { businessName: 'D’Sanga Pool, Bistro & Space', terms: 'The total is the final price agreed on WhatsApp.', verified: false },
+  })
+  await payload.updateGlobal({
+    slug: 'invoice-settings',
+    locale: 'id',
+    data: { terms: 'Total di atas adalah harga final yang disepakati lewat WhatsApp.' },
+  })
+  log(`${tables.length} sample tables + invoice settings`)
 
   // ── Temporary photos for every image slot (generated, labelled, unverified) ──
   await seedTempImages(payload, log)

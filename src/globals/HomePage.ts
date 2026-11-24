@@ -33,10 +33,28 @@ export const HomePage: GlobalConfig = {
           ...text('titleAccent'),
           admin: { description: 'Words at the end of the title shown in the accent colour, e.g. “a Space for Everyone”. Must appear in the title.' },
         },
-        { ...text('tagline'), admin: { description: 'Short italic line under the title. Empty = hidden.' } },
-        { name: 'intro', type: 'textarea', localized: true, required: true },
-        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Full-width photo behind the title: landscape, at least 2400 px wide, calm area in the middle.' } },
+        { ...text('tagline'), admin: { description: 'One short sentence under the title. Empty = the intro is shown instead.' } },
+        {
+          name: 'intro',
+          type: 'textarea',
+          localized: true,
+          required: true,
+          admin: { description: 'Description for Google and link previews; shown under the title when the tagline is empty.' },
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: { description: 'Full-screen photo: bright, at least 2400 px wide, calm area at the bottom left for the title. Set the focal point on the photo.' },
+        },
       ],
+    },
+    {
+      name: 'packages',
+      label: 'Packages section',
+      type: 'group',
+      admin: { description: 'Shows the active offers and the venue packages. Hidden when there are none.' },
+      fields: [text('eyebrow'), text('title'), { name: 'intro', type: 'textarea', localized: true }],
     },
     {
       name: 'experiences',
@@ -44,7 +62,7 @@ export const HomePage: GlobalConfig = {
       type: 'group',
       fields: [text('eyebrow'), text('title', true), { name: 'intro', type: 'textarea', localized: true }],
     },
-    { name: 'highlights', label: 'Offers & events section', type: 'group', fields: [text('eyebrow'), text('title')] },
+    { name: 'highlights', label: 'Upcoming events section', type: 'group', fields: [text('eyebrow'), text('title')] },
     {
       name: 'about',
       type: 'group',
@@ -54,6 +72,14 @@ export const HomePage: GlobalConfig = {
         { name: 'text', type: 'textarea', localized: true },
         { name: 'quote', type: 'textarea', localized: true, admin: { description: 'Quote card under the text. Empty = hidden.' } },
         { name: 'image', type: 'upload', relationTo: 'media' },
+        {
+          name: 'photos',
+          type: 'upload',
+          relationTo: 'media',
+          hasMany: true,
+          maxRows: 2,
+          admin: { description: 'Two more photos for the collage next to the text.' },
+        },
         {
           name: 'values',
           type: 'array',
@@ -68,9 +94,10 @@ export const HomePage: GlobalConfig = {
     },
     {
       name: 'ways',
-      label: 'Four ways section (dark)',
+      label: 'Four ways section (no longer shown)',
       type: 'group',
-      admin: { description: 'One card per experience type: Pool, Bistro & Coffee, Work & Space, Activities.' },
+      // Merged into the Explore section (layout v3). Kept so no data is dropped; remove with the stage 7 migrations.
+      admin: { hidden: true },
       fields: [text('eyebrow'), text('title'), { name: 'intro', type: 'textarea', localized: true }],
     },
     {
@@ -90,7 +117,23 @@ export const HomePage: GlobalConfig = {
         },
       ],
     },
-    { name: 'gallery', type: 'group', fields: [text('eyebrow'), text('title')] },
+    {
+      name: 'gallery',
+      label: 'Photo mosaic',
+      type: 'group',
+      fields: [
+        text('eyebrow'),
+        text('title'),
+        {
+          name: 'photos',
+          type: 'upload',
+          relationTo: 'media',
+          hasMany: true,
+          maxRows: 8,
+          admin: { description: 'Eight photos, shown tall, wide, wide, tall, and so on. Phones show the first four. Empty = the newest gallery photos.' },
+        },
+      ],
+    },
     { name: 'visit', label: 'Plan your visit section', type: 'group', fields: [text('eyebrow'), text('title')] },
     {
       name: 'cta',

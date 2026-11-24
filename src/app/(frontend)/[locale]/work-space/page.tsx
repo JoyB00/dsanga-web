@@ -11,8 +11,8 @@ import {
 } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
+import { FactsStrip } from '@/components/ui/FactsStrip'
 import { FaqList } from '@/components/ui/FaqList'
-import { InquiryForm } from '@/components/ui/InquiryForm'
 import { RichText } from '@/components/ui/RichText'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
@@ -23,6 +23,7 @@ import { Section, SectionHeader } from '@/components/ui/Section'
 import { Panel } from '@/components/ui/InfoCard'
 import { WhatsAppButton, WhatsAppNotice } from '@/components/ui/WhatsAppButton'
 import { pageMetadata } from '@/lib/seo'
+import { priceText } from '@/lib/price'
 import { temp } from '@/lib/verification'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -54,7 +55,7 @@ const iconFor = (label: string): LucideIcon => {
   return CircleCheck
 }
 
-/** Work & Space (spec-layout-v2 §6.2): facilities over the hero edge, rates on dark, enquiry form, FAQ. */
+/** Work & Space (spec-layout-v2 §6.2): facilities over the hero edge, rates on dark (each with its own WhatsApp button), FAQ. */
 export default async function WorkSpacePage({ params }: Props) {
   const locale = await localeFromParams(params)
   const t = getDictionary(locale)
@@ -93,55 +94,54 @@ export default async function WorkSpacePage({ params }: Props) {
         }
       />
 
-      {!!work.facilities?.length && (
-        <section aria-label={t.experience.facilities} className="relative z-10 -mt-10">
-          <ul className="container-content grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 lg:gap-4">
-            {work.facilities.map((f) => {
-              const Icon = iconFor(f.label)
-              return (
-                <li
-                  key={f.id ?? f.label}
-                  className="flex flex-col items-center gap-3 rounded-card border border-border bg-surface p-5 text-center shadow-card"
-                >
-                  <span
-                    className="inline-flex size-12 items-center justify-center rounded-xl bg-highlight text-primary"
-                    aria-hidden="true"
-                  >
-                    <Icon className="size-6" strokeWidth={1.75} />
-                  </span>
-                  <span className="font-bold text-foreground">{f.label}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      )}
+      <FactsStrip
+        label={t.experience.facilities}
+        facts={(work.facilities ?? []).map((f) => ({ icon: iconFor(f.label), value: f.label }))}
+      />
 
       {/* Rates: the page's one dark section */}
       {rates.length > 0 && (
-        <Section id="rates" tone="dark" className="mt-16 md:mt-24">
+        <Section
+          id="rates"
+          tone="dark"
+          image={work.gallery?.[0] ?? work.heroImage}
+          className="mt-16 md:mt-24"
+        >
           <SectionHeader dark eyebrow={t.work.ratesEyebrow} title={t.work.ratesTitle} />
           <ul className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
             {rates.map((rate) => (
               <li
                 key={rate.id ?? rate.label}
                 {...temp(work)}
-                className="flex flex-col gap-3 rounded-card border border-white/10 bg-primary p-6"
+                className="flex flex-col gap-3 rounded-card border border-white/15 bg-primary/90 p-6"
               >
                 <h3 className="text-[24px] leading-tight font-bold text-white">{rate.label}</h3>
-                <p className="font-display text-[40px] leading-none font-bold text-accent-on-dark">
-                  {rate.weekday}
-                  {rate.unit && (
-                    <span className="ml-2 font-sans text-body font-semibold text-white/70">
-                      {rate.unit}
-                    </span>
-                  )}
-                </p>
+                {priceText(rate, 'weekday', locale) && (
+                  <p className="font-display text-[40px] leading-none font-bold text-accent-on-dark lining-nums">
+                    {priceText(rate, 'weekday', locale)}
+                    {rate.unit && (
+                      <span className="ml-2 font-sans text-body font-semibold text-white/70">
+                        {rate.unit}
+                      </span>
+                    )}
+                  </p>
+                )}
+                <WhatsAppButton
+                  number={wa}
+                  locale={locale}
+                  topic={`${topic} – ${rate.label}`}
+                  intent="booking"
+                  askPrice={!priceText(rate, 'weekday', locale)}
+                  label={t.cta.bookViaWhatsApp}
+                  context={rate.label}
+                  variant="gold"
+                  className="mt-auto w-full"
+                />
               </li>
             ))}
           </ul>
           {(work.capacity || work.terms) && (
-            <div className="grid gap-6 rounded-card border border-white/10 bg-white/5 p-6 text-white/85 md:grid-cols-2">
+            <div className="grid gap-6 rounded-card border border-white/15 bg-primary/90 p-6 text-white/85 md:grid-cols-2">
               {work.capacity && (
                 <div>
                   <strong className="block text-white">{t.work.capacity}</strong>
@@ -160,35 +160,19 @@ export default async function WorkSpacePage({ params }: Props) {
       )}
 
       <Section tone="alt">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-          <div className="flex flex-col items-start gap-5">
-            <SectionHeader
-              center={false}
-              eyebrow={t.work.askEyebrow}
-              title={t.work.askTitle}
-              intro={t.work.askText}
-            />
-            <WhatsAppButton
-              number={wa}
-              locale={locale}
-              topic={topic}
-              label={t.cta.checkAvailability}
-            />
-            <WhatsAppNotice locale={locale} />
-          </div>
-          <Panel>
-            {settings?.contactFormEnabled ? (
-              <InquiryForm
-                variant="work"
-                locale={locale}
-                t={t.form}
-                privacyHref={href('privacy', locale)}
-                usageOptions={rates.map((r) => r.label)}
-              />
-            ) : (
-              <p className="text-muted-foreground">{t.contact.formOff}</p>
-            )}
-          </Panel>
+        <div className="flex flex-col items-center gap-5 text-center">
+          <SectionHeader
+            eyebrow={t.work.askEyebrow}
+            title={t.work.askTitle}
+            intro={t.work.askText}
+          />
+          <WhatsAppButton
+            number={wa}
+            locale={locale}
+            topic={topic}
+            label={t.cta.checkAvailability}
+          />
+          <WhatsAppNotice locale={locale} />
         </div>
       </Section>
 

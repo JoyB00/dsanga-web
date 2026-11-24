@@ -44,6 +44,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip Payload admin/API, Next internals, uploaded media and any file with an extension.
-  matcher: ['/((?!admin|api|_next|media|.*\\..*).*)'],
+  // Skip Payload admin/API, private invoice links, Next internals, uploaded media and any file with an extension.
+  matcher: ['/((?!admin|api|invoice/|_next|media|.*\\..*).*)'],
 }

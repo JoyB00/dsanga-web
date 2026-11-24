@@ -1,7 +1,7 @@
 import type { Access, FieldAccess, PayloadRequest } from 'payload'
 
 /** Roles from spec §7 (CMS, Hak Akses, dan SOP Konten). */
-export const ROLES = ['super-admin', 'approver', 'content-admin', 'product-admin', 'viewer'] as const
+export const ROLES = ['super-admin', 'approver', 'content-admin', 'product-admin', 'order-admin', 'viewer'] as const
 export type Role = (typeof ROLES)[number]
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -9,6 +9,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   approver: 'Penanggung Jawab (Approver)',
   'content-admin': 'Admin Konten',
   'product-admin': 'Admin Produk',
+  'order-admin': 'Admin Pesanan',
   viewer: 'Viewer / Pimpinan',
 }
 
@@ -40,6 +41,10 @@ export const canEditProducts: Access = ({ req }) =>
 /** Media is shared by both admin types. */
 export const canEditMedia: Access = ({ req }) =>
   hasRole(req.user, 'super-admin', 'approver', 'content-admin', 'product-admin')
+
+/** Orders, tables and invoices hold customer data: only these roles, never visitors or content admins. */
+export const isOrderStaff = (user: MaybeUser) => hasRole(user, 'super-admin', 'approver', 'order-admin')
+export const canManageOrders: Access = ({ req }) => isOrderStaff(req.user)
 
 export const approverFieldAccess: FieldAccess = ({ req }) => canApprove(req.user)
 export const superAdminFieldAccess: FieldAccess = ({ req }) => hasRole(req.user, 'super-admin')

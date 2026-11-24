@@ -9,6 +9,7 @@ import { href, routeKeyFromPathname, type Locale, type RouteKey } from '../i18n/
 import { cn } from '../lib/cn'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
+// Nine items need 1200 px in Indonesian; below that the menu button is used.
 const MAIN_NAV: RouteKey[] = [
   'home',
   'about',
@@ -17,10 +18,11 @@ const MAIN_NAV: RouteKey[] = [
   'workSpace',
   'activities',
   'events',
+  'offers',
   'visit',
 ]
-/** The mobile panel adds Gallery, Offers and Contact (spec §3.2). */
-const MOBILE_EXTRA: RouteKey[] = ['gallery', 'offers', 'contact']
+/** The mobile panel adds Gallery and Contact (spec §3.2). */
+const MOBILE_EXTRA: RouteKey[] = ['gallery', 'contact']
 
 type Props = {
   locale: Locale
@@ -77,7 +79,7 @@ export function SiteHeader({
       className={cn(
         'no-underline transition-colors',
         variant === 'desktop'
-          ? 'rounded-full px-3 py-2 text-small font-bold'
+          ? 'rounded-full px-3 py-2 text-small font-bold whitespace-nowrap'
           : 'flex min-h-touch items-center rounded-2xl px-4 text-body font-bold',
         key === current
           ? 'bg-highlight text-primary'
@@ -105,12 +107,12 @@ export function SiteHeader({
       >
         <Link href={href('home', locale)} className="flex flex-col py-1 leading-tight no-underline">
           <span className="text-lg font-extrabold tracking-[0.08em] text-primary">D’SANGA</span>
-          <span className="text-[10px] font-bold tracking-[0.16em] whitespace-nowrap text-accent-text uppercase">
+          <span className="text-[11px] font-bold tracking-[0.1em] whitespace-nowrap text-accent-text uppercase">
             {brandTagline}
           </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden flex-1 justify-center gap-1 lg:flex">
+        <nav aria-label="Main" className="hidden flex-1 justify-center gap-1 min-[1200px]:flex">
           {MAIN_NAV.map((key) => link(key, 'desktop'))}
         </nav>
 
@@ -122,7 +124,7 @@ export function SiteHeader({
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
-            className="inline-flex size-11 items-center justify-center rounded-full bg-primary text-on-primary lg:hidden"
+            className="inline-flex size-11 items-center justify-center rounded-full bg-primary text-on-primary min-[1200px]:hidden"
           >
             {open ? (
               <X className="size-5" aria-hidden="true" />
@@ -138,7 +140,7 @@ export function SiteHeader({
         id="mobile-menu"
         aria-label="Mobile"
         hidden={!open}
-        className="glass mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-content overflow-y-auto rounded-[24px] p-3 shadow-[0_10px_30px_rgb(31_42_36/0.16)] lg:hidden"
+        className="glass mx-auto mt-2 max-h-[calc(100dvh-6rem)] max-w-content overflow-y-auto rounded-[24px] p-3 shadow-[0_10px_30px_rgb(31_42_36/0.16)] min-[1200px]:hidden"
       >
         <ul className="grid gap-1 sm:grid-cols-2">
           {[...MAIN_NAV, ...MOBILE_EXTRA].map((key) => (

@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { canEditContent } from '../access/roles'
 import { governanceFields } from '../fields/governance'
+import { readPrice, showPriceField } from '../fields/price'
 import { auditHooks } from '../hooks/auditLog'
 
 /** Agenda + archive. Events whose start date has passed are shown in the archive (F-13). */
@@ -51,7 +52,8 @@ export const Events: CollectionConfig = {
       type: 'row',
       fields: [
         { name: 'capacity', type: 'number', min: 0 },
-        { name: 'price', type: 'text', localized: true, admin: { placeholder: 'Free / Rp75.000' } },
+        { name: 'priceAmount', type: 'number', min: 0, access: { read: readPrice }, admin: { description: 'Rupiah, no separators.' } },
+        { name: 'price', type: 'text', label: 'Price words', localized: true, access: { read: readPrice }, admin: { description: 'Only for words instead of a number, e.g. Free.' } },
       ],
     },
     {
@@ -60,6 +62,7 @@ export const Events: CollectionConfig = {
       defaultValue: true,
       admin: { description: 'Show "Join via WhatsApp" with the event name as context.' },
     },
+    showPriceField,
     ...governanceFields,
   ],
 }

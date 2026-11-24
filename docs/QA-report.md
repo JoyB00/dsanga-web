@@ -84,6 +84,14 @@ Production build, Lighthouse 13.6, mobile, simulated slow 4G, best of 2 runs. Fu
 | 8 | F-15: page entries and photos had no Verified flag; no staging marker or go-live gate | Flag added; markers, dashboard panel, `pnpm check:golive` |
 | 9 | Staging marker label clipped on cards | Label moved inside the card corner |
 
+## Layout v3 (24 Nov 2026)
+
+UX audit and new Lighthouse numbers: `docs/ux-audit-v3.md`. Simulated mobile LCP is 2.7–3.3 s now that every measured page has a hero photo (target 2.5 s); re-measure on staging. 22 integration and 68 browser tests pass.
+
+## Order flow (24 Nov 2026)
+
+Orders, tables, invoices and hidden prices: `docs/spec-order-flow.md`. 39 integration tests pass. Full browser run with WhatsApp buttons visible (placeholder number, restored afterwards): 68 of 69 pass; the language-switcher test failed once under load and passed 3 of 3 when repeated. Production build checked: invoice page and PDF work, hidden prices are not in the API or the pages.
+
 ## Open items
 
 **Before sign-off (stage 7 / staging):**

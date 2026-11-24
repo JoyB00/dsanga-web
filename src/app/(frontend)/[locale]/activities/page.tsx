@@ -12,12 +12,13 @@ import { getPageHead } from '@/lib/pageHead'
 import { getSiteSettings } from '@/lib/payload'
 import { getActivities } from '@/lib/queries'
 import { Catalog } from '@/components/ui/Catalog'
-import { OverlayCard } from '@/components/ui/OverlayCard'
+import { WaveCard } from '@/components/ui/WaveCard'
 import { PageHero } from '@/components/ui/PageHero'
 import { Section, SectionHeader } from '@/components/ui/Section'
 import { CtaBand } from '@/components/ui/CtaBand'
 import { InfoCard } from '@/components/ui/InfoCard'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
+import { priceText } from '@/lib/price'
 import { pageMetadata } from '@/lib/seo'
 import { temp } from '@/lib/verification'
 
@@ -63,11 +64,12 @@ export default async function ActivitiesPage({ params }: Props) {
       />
 
       {/* All activities; hidden ones never load (F-02) */}
-      <Section id="all" tone="alt">
+      <Section id="all">
         <SectionHeader eyebrow={t.activities.allEyebrow} title={t.activities.allTitle} />
         <Catalog
           allLabel={t.catalog.all}
           resultsLabel={t.catalog.results}
+          gridClass="grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4"
           filters={[
             { value: 'available', label: t.status.available },
             { value: 'coming-soon', label: t.status.comingSoon },
@@ -76,25 +78,13 @@ export default async function ActivitiesPage({ params }: Props) {
             id: act.id,
             type: act.availability,
             node: (
-              <OverlayCard
+              <WaveCard
                 {...temp(act)}
                 href={`#${act.key}`}
                 image={act.heroImage}
-                category={act.tagline || t.nav.activities}
                 title={act.title}
+                text={act.hours?.weekday ? `${t.openPrefix} ${act.hours.weekday}` : act.tagline}
                 badge={act.availability === 'coming-soon' ? t.status.comingSoon : undefined}
-                chips={
-                  act.hours?.weekday
-                    ? [
-                        {
-                          icon: (
-                            <Clock className="size-3.5 text-accent-on-dark" aria-hidden="true" />
-                          ),
-                          text: `${t.openPrefix} ${act.hours.weekday}`,
-                        },
-                      ]
-                    : []
-                }
               />
             ),
           }))}
@@ -104,9 +94,10 @@ export default async function ActivitiesPage({ params }: Props) {
       {/* One detail block per activity, reachable via #key from Home and the cards above */}
       {activities.map((act, i) => {
         const price = act.prices?.[0]
+        const priceLabel = price && priceText(price, 'weekday', locale)
         const comingSoon = act.availability === 'coming-soon'
         return (
-          <Section key={act.id} id={act.key} {...temp(act)} tone={i % 2 ? 'white' : 'cream'}>
+          <Section key={act.id} id={act.key} {...temp(act)} tone={i % 2 ? 'white' : 'alt'}>
             <div className="grid items-start gap-10 lg:grid-cols-2">
               <div className={cn('group', i % 2 === 1 && 'lg:order-2')}>
                 <div className="zoom-media overflow-hidden rounded-media">
@@ -114,7 +105,7 @@ export default async function ActivitiesPage({ params }: Props) {
                     media={act.heroImage}
                     placeholder={`${t.experience.photo} · ${act.title}`}
                     sizes="(min-width: 1024px) 50vw, 100vw"
-                    className="aspect-[4/3] w-full"
+                    className="aspect-[4/3] w-full lg:aspect-[5/4]"
                   />
                 </div>
               </div>
@@ -140,16 +131,16 @@ export default async function ActivitiesPage({ params }: Props) {
                   </>
                 ) : (
                   <>
-                    {(act.hours?.weekday || price) && (
+                    {(act.hours?.weekday || priceLabel) && (
                       <div className="grid w-full gap-4 sm:grid-cols-2">
                         {act.hours?.weekday && (
                           <InfoCard icon={Clock} label={t.activities.hours}>
                             {act.hours.weekday}
                           </InfoCard>
                         )}
-                        {price && (
+                        {priceLabel && (
                           <InfoCard icon={Ticket} label={t.activities.price}>
-                            {price.weekday} {price.unit}
+                            {priceLabel} {price.unit}
                           </InfoCard>
                         )}
                       </div>
@@ -174,7 +165,10 @@ export default async function ActivitiesPage({ params }: Props) {
                       number={wa}
                       locale={locale}
                       topic={act.whatsappContext || act.title}
+                      intent="booking"
+                      askPrice={!priceLabel}
                       label={t.cta.bookViaWhatsApp}
+                      context={act.title}
                     />
                   </>
                 )}
@@ -186,6 +180,7 @@ export default async function ActivitiesPage({ params }: Props) {
 
       <CtaBand
         locale={locale}
+        image={activities.at(-1)?.heroImage}
         eyebrow={t.home.ctaEyebrow}
         title={t.home.ctaTitle}
         text={t.home.ctaText}

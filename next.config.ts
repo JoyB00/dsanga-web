@@ -10,7 +10,13 @@ const dirname = path.dirname(__filename)
 const storagePublicUrl = process.env.S3_PUBLIC_URL ? new URL(process.env.S3_PUBLIC_URL) : null
 
 const nextConfig: NextConfig = {
+  // Invoice PDFs (src/lib/invoice/pdf.ts): loads its font files with Node's fs.
+  serverExternalPackages: ['pdfkit'],
   images: {
+    // AVIF first (smaller hero photos on mobile data), WebP for older browsers.
+    formats: ['image/avif', 'image/webp'],
+    // Photo URLs carry ?v=<updatedAt>, so an optimised file can be kept for a month.
+    minimumCacheTTL: 2678400,
     localPatterns: [
       {
         pathname: '/api/media/file/**',

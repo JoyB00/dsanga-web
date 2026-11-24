@@ -447,8 +447,8 @@ export const IMAGES: ImageDef[] = [
 /** Which image goes where. Keys refer to IMAGES. */
 const ASSIGN = {
   experiences: {
-    pool: { hero: 'pool-main', gallery: ['pool-kids', 'pool-loungers', 'pool-evening', 'family-pool'] },
-    dining: { hero: 'bistro', gallery: ['dining-indoor', 'dining-garden', 'poolside-snacks'] },
+    pool: { hero: 'pool-kids', gallery: ['family-pool', 'pool-loungers', 'pool-evening', 'pool-main'] },
+    dining: { hero: 'menu-chicken-bowl', gallery: ['dining-indoor', 'dining-garden', 'poolside-snacks'] },
     coffee: { hero: 'coffee', gallery: ['barista-v60', 'menu-kopi-bali'] },
     'work-space': { hero: 'work', gallery: ['work-pavilion', 'work-daypass'] },
     playground: { hero: 'playground' },
@@ -475,15 +475,22 @@ const ASSIGN = {
   } as Record<string, string>,
   offers: { 'Family Weekend Package': 'family-pool', 'Work & Coffee Day Pass': 'work-daypass' } as Record<string, string>,
   pageIntros: {
-    activities: 'playground',
-    events: 'event-acoustic',
+    activities: 'creative',
+    events: 'event-market',
     offers: 'family-pool',
     gallery: 'pool-evening',
-    visit: 'dining-garden',
+    visit: 'village',
     contact: 'village',
   } as Record<string, string>,
-  home: { hero: 'home-hero', about: 'village' },
-  about: { hero: 'gathering' },
+  venuePackages: { 'Garden Gathering': 'dining-garden', 'Pavilion Event': 'pool-loungers', 'Full Venue': 'gathering' } as Record<string, string>,
+  home: {
+    hero: 'home-hero',
+    about: 'village',
+    aboutPhotos: ['creative', 'dining-garden'],
+    // Tall, wide, wide, tall, … (PhotoMosaic)
+    mosaic: ['wellness', 'pool-kids', 'bistro', 'work', 'event-market', 'menu-coconut', 'coffee', 'home-hero'],
+  },
+  about: { hero: 'pool-loungers' },
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
@@ -564,6 +571,11 @@ export async function seedTempImages(payload: Payload, log: (m: string) => void,
   }
   log(`${created} temporary photos created (${stockCount} stock photos, ${IMAGES.length - created} already there)`)
 
+  for (const def of IMAGES) {
+    const focal = stockFor(def.key)?.photo.focal
+    if (focal) await payload.update({ collection: 'media', id: ids[def.key], data: { focalX: focal.x, focalY: focal.y } })
+  }
+
   const published = { _status: 'published' as const }
   for (const [key, a] of Object.entries(ASSIGN.experiences)) {
     const res = await payload.find({ collection: 'experiences', where: { key: { equals: key } }, limit: 1, depth: 0 })
@@ -578,6 +590,7 @@ export async function seedTempImages(payload: Payload, log: (m: string) => void,
     ['menu-items', 'name', ASSIGN.menu],
     ['events', 'title', ASSIGN.events],
     ['offers', 'title', ASSIGN.offers],
+    ['venue-packages', 'name', ASSIGN.venuePackages],
   ] as const) {
     for (const [title, key] of Object.entries(map)) {
       const res = await payload.find({ collection, where: { [field]: { equals: title } }, locale: 'en', limit: 1, depth: 0 })
@@ -593,7 +606,12 @@ export async function seedTempImages(payload: Payload, log: (m: string) => void,
   await payload.updateGlobal({
     slug: 'home-page',
     locale: 'en',
-    data: { hero: { ...home.hero, image: ids[ASSIGN.home.hero] }, about: { ...home.about, image: ids[ASSIGN.home.about] }, ...published },
+    data: {
+      hero: { ...home.hero, image: ids[ASSIGN.home.hero] },
+      about: { ...home.about, image: ids[ASSIGN.home.about], photos: ASSIGN.home.aboutPhotos.map((k) => ids[k]) },
+      gallery: { ...home.gallery, photos: ASSIGN.home.mosaic.map((k) => ids[k]) },
+      ...published,
+    },
   })
   const about = await payload.findGlobal({ slug: 'about-page', locale: 'en', depth: 0 })
   await payload.updateGlobal({ slug: 'about-page', locale: 'en', data: { hero: { ...about.hero, image: ids[ASSIGN.about.hero] }, ...published } })

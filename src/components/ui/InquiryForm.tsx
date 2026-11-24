@@ -8,17 +8,13 @@ import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionaries'
 import { trackEvent } from '@/lib/analytics'
 
-type Variant = 'contact' | 'work'
-type Field = 'name' | 'email' | 'message' | 'consent' | 'visitDate' | 'people'
+type Field = 'name' | 'email' | 'message' | 'consent'
 type Errors = Partial<Record<Field, string>>
 
 type Props = {
-  variant: Variant
   locale: Locale
   t: Dictionary['form']
   privacyHref: string
-  /** Work & Space usage types from the CMS price rows, e.g. ["Day pass", "Meeting room"]. */
-  usageOptions?: string[]
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -27,7 +23,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
  * F-14 short form → POST /api/inquiries. Visible labels, errors under each field, focus moves to
  * the first invalid field, honeypot against spam. The server re-checks everything.
  */
-export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = [] }: Props) {
+export function InquiryForm({ locale, t, privacyHref }: Props) {
   const id = useId()
   const formRef = useRef<HTMLFormElement>(null)
   const [errors, setErrors] = useState<Errors>({})
@@ -39,11 +35,7 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
     const email = String(data.get('email') ?? '').trim()
     if (!email) e.email = t.errors.required
     else if (!EMAIL.test(email)) e.email = t.errors.email
-    if (variant === 'contact' && !String(data.get('message') ?? '').trim()) e.message = t.errors.required
-    if (variant === 'work') {
-      if (!data.get('visitDate')) e.visitDate = t.errors.required
-      if (!Number(data.get('people'))) e.people = t.errors.required
-    }
+    if (!String(data.get('message') ?? '').trim()) e.message = t.errors.required
     if (!data.get('consent')) e.consent = t.errors.consent
     return e
   }
@@ -60,16 +52,12 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
       return
     }
 
-    const usage = String(data.get('usage') ?? '')
-    const notes = String(data.get('message') ?? '').trim()
     const body = {
       name: String(data.get('name')).trim(),
       email: String(data.get('email')).trim(),
       whatsapp: String(data.get('whatsapp') ?? '').trim() || undefined,
-      topic: variant === 'work' ? 'work' : String(data.get('topic') || 'general'),
-      visitDate: data.get('visitDate') || undefined,
-      people: data.get('people') ? Number(data.get('people')) : undefined,
-      message: variant === 'work' ? [usage && `${t.usage}: ${usage}`, notes].filter(Boolean).join('\n') || usage || '-' : notes,
+      topic: String(data.get('topic') || 'general'),
+      message: String(data.get('message') ?? '').trim(),
       consent: true,
       website: String(data.get('website') ?? ''),
       locale,
@@ -83,7 +71,7 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error(String(res.status))
-      trackEvent('generate_lead', { form: variant, topic: body.topic, site_language: locale })
+      trackEvent('generate_lead', { form: 'contact', topic: body.topic, site_language: locale })
       setStatus('sent')
       form.reset()
     } catch {
@@ -118,32 +106,6 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
         {fieldError('name')}
       </label>
 
-      {variant === 'work' && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="field-label">
-            {t.date} *
-            <input name="visitDate" type="date" className="field-input" aria-invalid={!!errors.visitDate} aria-describedby={describedBy('visitDate')} />
-            {fieldError('visitDate')}
-          </label>
-          <label className="field-label">
-            {t.people} *
-            <input name="people" type="number" inputMode="numeric" min={1} defaultValue={1} className="field-input" aria-invalid={!!errors.people} aria-describedby={describedBy('people')} />
-            {fieldError('people')}
-          </label>
-        </div>
-      )}
-
-      {variant === 'work' && usageOptions.length > 0 && (
-        <label className="field-label">
-          {t.usage}
-          <select name="usage" className="field-input">
-            {usageOptions.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      )}
-
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="field-label">
           {t.email} *
@@ -156,21 +118,19 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
         </label>
       </div>
 
-      {variant === 'contact' && (
-        <label className="field-label">
-          {t.topic}
-          <select name="topic" className="field-input" defaultValue="general">
-            {Object.entries(t.topics).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      <label className="field-label">
+        {t.topic}
+        <select name="topic" className="field-input" defaultValue="general">
+          {Object.entries(t.topics).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <label className="field-label">
-        {variant === 'contact' ? `${t.message} *` : t.notes}
+        {t.message} *
         <textarea
           name="message"
           rows={5}
@@ -194,7 +154,7 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
           <input
             name="consent"
             type="checkbox"
-            className="mt-0.5 size-5 shrink-0 accent-[var(--ds-color-primary)]"
+            className="size-6 shrink-0 accent-[var(--ds-color-primary)]"
             aria-invalid={!!errors.consent}
             aria-describedby={describedBy('consent')}
           />
@@ -218,7 +178,7 @@ export function InquiryForm({ variant, locale, t, privacyHref, usageOptions = []
 
       <button type="submit" className="btn-primary self-start" disabled={status === 'sending'}>
         {status === 'sending' && <LoaderCircle className="size-5 animate-spin" aria-hidden="true" />}
-        {status === 'sending' ? t.sending : variant === 'work' ? t.submitWork : t.submit}
+        {status === 'sending' ? t.sending : t.submit}
       </button>
     </form>
   )

@@ -1,22 +1,26 @@
 import type { Metadata } from 'next'
 import { Baby, CircleCheck, Clock, ShieldCheck, Ticket } from 'lucide-react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { CmsImage } from '@/components/ui/CmsImage'
+import { FactsStrip, type Fact } from '@/components/ui/FactsStrip'
+import { PhotoMosaic } from '@/components/ui/PhotoMosaic'
 import { FaqList } from '@/components/ui/FaqList'
 import { PriceTable } from '@/components/ui/PriceTable'
 import { RichText } from '@/components/ui/RichText'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { href, localeFromParams } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
+import { asMedia } from '@/lib/media'
 import { getSiteSettings } from '@/lib/payload'
 import { getExperience, getFaqs } from '@/lib/queries'
 import { PageHero } from '@/components/ui/PageHero'
 import { Section, SectionHeader } from '@/components/ui/Section'
 import { CtaBand } from '@/components/ui/CtaBand'
-import { InfoCard, Panel } from '@/components/ui/InfoCard'
+import { Panel } from '@/components/ui/InfoCard'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { pageMetadata } from '@/lib/seo'
+import { priceText } from '@/lib/price'
 import { whatsappUrl } from '@/lib/whatsapp'
 import { temp } from '@/lib/verification'
 
@@ -49,8 +53,60 @@ export default async function PoolPage({ params }: Props) {
 
   const wa = settings?.whatsappNumber
   const topic = pool.whatsappContext || pool.title
-  const firstPrice = pool.prices?.[0]
-  const gallery = (pool.gallery ?? []).slice(0, 4)
+  const prices = pool.prices ?? []
+  const firstPrice = prices[0] && priceText(prices[0], 'weekday', locale)
+  const hasPrices = prices.some((p) => priceText(p, 'weekday', locale) || priceText(p, 'weekend', locale))
+  const book = { number: wa, locale, topic, intent: 'booking', askPrice: !hasPrices } as const
+  const gallery = asMedia(pool.gallery)
+  const facts: Fact[] = [
+    ...(pool.hours?.weekday
+      ? [
+          {
+            icon: Clock,
+            label: t.experience.hours,
+            value: pool.hours.weekday,
+            note:
+              pool.hours.weekend && pool.hours.weekend !== pool.hours.weekday
+                ? `${t.experience.weekend}: ${pool.hours.weekend}`
+                : undefined,
+          },
+        ]
+      : []),
+    ...(firstPrice
+      ? [
+          {
+            icon: Ticket,
+            label: t.experience.ticket,
+            value: firstPrice,
+            note: `${prices[0].label} · ${t.experience.weekday}`,
+          },
+        ]
+      : []),
+    ...(pool.facilities?.length
+      ? [
+          {
+            icon: CircleCheck,
+            label: t.experience.facilities,
+            value: pool.facilities.length,
+            note: pool.facilities.map((f) => f.label).join(', '),
+          },
+        ]
+      : []),
+    {
+      icon: WhatsAppIcon,
+      label: t.experience.booking,
+      value: 'WhatsApp',
+      note: whatsappUrl(wa, locale, topic) ? (
+        <WhatsAppButton
+          {...book}
+          label={t.experience.bookingText}
+          variant="link"
+        />
+      ) : (
+        t.experience.bookingText
+      ),
+    },
+  ]
 
   return (
     <>
@@ -65,9 +121,7 @@ export default async function PoolPage({ params }: Props) {
         actions={
           <>
             <WhatsAppButton
-              number={wa}
-              locale={locale}
-              topic={topic}
+              {...book}
               label={t.cta.bookViaWhatsApp}
             />
             <a href="#info" className="btn-glass">
@@ -77,68 +131,11 @@ export default async function PoolPage({ params }: Props) {
         }
       />
 
-      {/* Quick-info strip, pulled up over the hero edge */}
-      <section
-        id="info"
-        aria-label={t.pool.infoTitle}
-        className="relative z-10 -mt-10 scroll-mt-28"
-      >
-        <div className="container-content grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoCard icon={Clock} label={t.experience.hours}>
-            {pool.hours?.weekday}
-            {pool.hours?.weekend && pool.hours.weekend !== pool.hours.weekday && (
-              <span className="block text-small">
-                {t.experience.weekend}: {pool.hours.weekend}
-              </span>
-            )}
-          </InfoCard>
-          {firstPrice && (
-            <InfoCard icon={Ticket} label={t.experience.ticket}>
-              {t.experience.from} {firstPrice.weekday} {firstPrice.unit}
-            </InfoCard>
-          )}
-          {!!pool.facilities?.length && (
-            <InfoCard icon={CircleCheck} label={t.experience.facilities}>
-              <span className="line-clamp-2">{pool.facilities.map((f) => f.label).join(', ')}</span>
-            </InfoCard>
-          )}
-          <InfoCard icon={WhatsAppIcon} label={t.experience.booking}>
-            {whatsappUrl(wa, locale, topic) ? (
-              <WhatsAppButton
-                number={wa}
-                locale={locale}
-                topic={topic}
-                label={t.experience.bookingText}
-                variant="link"
-              />
-            ) : (
-              t.experience.bookingText
-            )}
-          </InfoCard>
-        </div>
-      </section>
+      <FactsStrip id="info" label={t.pool.infoTitle} facts={facts} />
 
-      {gallery.length > 0 && (
-        <Section tone="cream" className="!pb-0">
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-            {gallery.map((media) => (
-              <li
-                key={typeof media === 'object' ? media.id : media}
-                {...temp(media)}
-                className="group"
-              >
-                <div className="zoom-media overflow-hidden rounded-card">
-                  <CmsImage
-                    media={media}
-                    placeholder={t.experience.photo}
-                    size="card"
-                    sizes="(min-width: 768px) 25vw, 50vw"
-                    className="aspect-[4/3] w-full"
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+      {gallery.length >= 4 && (
+        <Section className="!pb-0">
+          <PhotoMosaic photos={gallery} />
         </Section>
       )}
 
@@ -156,7 +153,7 @@ export default async function PoolPage({ params }: Props) {
                 {pool.facilities.map((f) => (
                   <li
                     key={f.id ?? f.label}
-                    className="flex items-center gap-3 rounded-card border border-border bg-surface px-4 py-3"
+                    className="flex items-center gap-3 rounded-card bg-surface px-4 py-3.5 shadow-card"
                   >
                     <CircleCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />
                     {f.label}
@@ -165,7 +162,7 @@ export default async function PoolPage({ params }: Props) {
               </ul>
             </div>
           )}
-          {!!pool.prices?.length && (
+          {hasPrices && (
             <div className="flex min-w-0 flex-col gap-6">
               <SectionHeader
                 center={false}
@@ -173,7 +170,8 @@ export default async function PoolPage({ params }: Props) {
                 title={t.pool.ticketsTitle}
               />
               <PriceTable
-                rows={pool.prices}
+                rows={prices}
+                locale={locale}
                 labels={{
                   item: t.experience.priceItem,
                   weekday: t.experience.weekday,
@@ -231,14 +229,15 @@ export default async function PoolPage({ params }: Props) {
         </Section>
       )}
 
-      <CtaBand locale={locale} title={t.pool.ctaTitle} text={t.pool.ctaText}>
+      <CtaBand locale={locale} image={gallery.at(-1)} title={t.pool.ctaTitle} text={t.pool.ctaText}>
         <WhatsAppButton
-          number={wa}
-          locale={locale}
-          topic={topic}
+          {...book}
           label={t.cta.bookViaWhatsApp}
           variant="gold"
         />
+        <Link href={href('visit', locale)} className="btn-outline-light">
+          {t.home.ctaSecondary}
+        </Link>
       </CtaBand>
     </>
   )
