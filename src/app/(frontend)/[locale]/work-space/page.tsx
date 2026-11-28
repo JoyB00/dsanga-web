@@ -108,7 +108,7 @@ export default async function WorkSpacePage({ params }: Props) {
           className="mt-16 md:mt-24"
         >
           <SectionHeader dark eyebrow={t.work.ratesEyebrow} title={t.work.ratesTitle} />
-          <ul className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
+          <ul data-stagger className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-5">
             {rates.map((rate) => (
               <li
                 key={rate.id ?? rate.label}

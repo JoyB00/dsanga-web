@@ -149,7 +149,7 @@ export default async function PoolPage({ params }: Props) {
                 eyebrow={t.experience.facilities}
                 title={t.pool.facilitiesTitle}
               />
-              <ul className="grid gap-3 sm:grid-cols-2">
+              <ul data-stagger className="grid gap-3 sm:grid-cols-2">
                 {pool.facilities.map((f) => (
                   <li
                     key={f.id ?? f.label}

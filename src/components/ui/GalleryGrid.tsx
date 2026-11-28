@@ -90,7 +90,7 @@ export function GalleryGrid({ items, t }: { items: GalleryItem[]; t: Strings }) 
         </div>
       )}
 
-      <ul className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
+      <ul data-stagger className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
         {visible.map((item, i) => (
           <li key={item.id} {...item.marker} className="mb-3 break-inside-avoid md:mb-4">
             <button

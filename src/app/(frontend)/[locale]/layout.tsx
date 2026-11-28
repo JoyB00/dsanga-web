@@ -10,6 +10,7 @@ import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { href, isLocale, locales } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionaries'
 import { Analytics } from '@/components/Analytics'
+import { MotionEffects } from '@/components/MotionEffects'
 import { getSiteSettings } from '@/lib/payload'
 import { getHomePage } from '@/lib/queries'
 import { indexingAllowed, SITE_NAME, siteUrl } from '@/lib/seo'
@@ -79,6 +80,7 @@ export default async function LocaleLayout({
         <main id="main" tabIndex={-1} className="flex-1">
           {children}
         </main>
+        <MotionEffects />
         <SiteFooter
           locale={locale}
           settings={settings}

@@ -145,7 +145,7 @@ export default async function AboutPage({ params }: Props) {
           eyebrow={about?.values?.eyebrow || t.about.valuesEyebrow}
           title={about?.values?.title || t.about.valuesTitle}
         />
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ul data-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {values.map(({ title: valueTitle, text, Icon }) => (
             <li
               key={valueTitle}

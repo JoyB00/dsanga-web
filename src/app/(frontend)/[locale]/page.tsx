@@ -142,7 +142,7 @@ export default async function HomePage({ params }: Props) {
             intro={home?.packages?.intro || t.home.packagesIntro}
           />
           {offers.length > 0 && (
-            <ul className={cn('grid gap-6 md:gap-8', offers.length > 1 && 'md:grid-cols-2')}>
+            <ul data-stagger className={cn('grid gap-6 md:gap-8', offers.length > 1 && 'md:grid-cols-2')}>
               {offers.map((offer) => (
                 <li key={offer.id}>
                   <OfferPackageCard offer={offer} locale={locale} whatsapp={wa} />
@@ -155,7 +155,7 @@ export default async function HomePage({ params }: Props) {
               <p className="text-center font-display text-[24px] font-bold md:text-[28px]">
                 {t.home.venueTitle}
               </p>
-              <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              <ul data-stagger className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 {venues.map((pkg) => (
                   <li key={pkg.id}>
                     <VenuePackageCard pkg={pkg} locale={locale} />
@@ -272,7 +272,7 @@ export default async function HomePage({ params }: Props) {
             ))}
           </ul>
         </div>
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-6 border-t border-border pt-8 lg:grid-cols-4">
+        <ul data-stagger className="grid grid-cols-2 gap-x-4 gap-y-6 border-t border-border pt-8 lg:grid-cols-4">
           {values.map(({ icon: Icon, label, text }, i) => (
             <li key={label} className="flex items-start gap-3">
               <span
@@ -348,7 +348,7 @@ export default async function HomePage({ params }: Props) {
             title={home?.whyVisit?.title || t.home.whyTitle}
             intro={home?.whyVisit?.intro || t.home.whyIntro}
           />
-          <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+          <ul data-stagger className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
             {whyItems.map((item) => {
               const Icon = iconFor(item.icon)
               return (

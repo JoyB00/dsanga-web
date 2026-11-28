@@ -70,7 +70,7 @@ export function Catalog({
       <p className="sr-only" aria-live="polite">
         {resultsLabel.replace('{n}', String(visible.length))}
       </p>
-      <ul className={cn('grid', gridClass)}>
+      <ul data-stagger className={cn('grid', gridClass)}>
         {visible.map((item, index) => (
           <li
             key={item.id}

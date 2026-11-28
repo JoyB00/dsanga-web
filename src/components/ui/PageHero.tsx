@@ -73,7 +73,7 @@ export function PageHero({
           )}
           <div
             className={cn(
-              'container-content flex flex-col items-start gap-4',
+              'hero-intro container-content flex flex-col items-start gap-4',
               hasPhoto ? 'pb-24 md:pb-32' : 'pt-32 pb-20 md:pt-40 md:pb-28',
             )}
           >

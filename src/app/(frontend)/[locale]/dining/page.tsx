@@ -120,7 +120,7 @@ export default async function DiningPage({ params }: Props) {
       {featured.length > 0 && (
         <Section tone="cream">
           <SectionHeader eyebrow={t.dining.signatureEyebrow} title={t.dining.signatureTitle} />
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ul data-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((item) => (
               <li
                 key={item.id}
@@ -244,7 +244,7 @@ export default async function DiningPage({ params }: Props) {
       {!!dining?.facilities?.length && (
         <Section tone="cream">
           <SectionHeader eyebrow={t.dining.ambienceEyebrow} title={t.dining.ambienceTitle} />
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul data-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {dining.facilities.map((area, i) => (
               <li
                 key={area.id ?? area.label}

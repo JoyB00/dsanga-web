@@ -258,6 +258,65 @@ a.group:active {
   to { transform: translateY(8%); }
 }
 
+/* Hero text comes in line by line on load. CSS only, so it never waits for JavaScript; the title
+   only rises (no fade), so it paints at once and never delays the largest contentful paint. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-intro > * {
+    animation: hero-intro-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hero-intro > :nth-child(2) { animation-delay: 80ms; }
+  .hero-intro > :nth-child(3) { animation-delay: 160ms; }
+  .hero-intro > :nth-child(4) { animation-delay: 240ms; }
+  .hero-intro > :nth-child(n + 5) { animation-delay: 320ms; }
+  .hero-intro > h1 {
+    animation-name: hero-title-in;
+  }
+}
+@keyframes hero-intro-in {
+  from { opacity: 0; translate: 0 1.25rem; }
+}
+@keyframes hero-title-in {
+  from { translate: 0 1.5rem; }
+}
+
+/* Photo cards tilt towards a mouse pointer with a soft glare (src/components/MotionEffects.tsx sets
+   the variables). Transform only; touch screens and reduced motion keep the flat card. */
+.tilt-glare {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* The 3D transform exists only while hovered, so resting cards hold no extra GPU layer. */
+  .group[data-tilt] {
+    transition:
+      transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      scale 150ms ease,
+      box-shadow 200ms ease;
+  }
+  .group[data-tilt]:hover {
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition-duration: 150ms, 150ms, 200ms;
+    box-shadow: 0 18px 40px rgb(31 42 36 / 0.22);
+  }
+  .tilt-glare {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at var(--glare-x, 50%) var(--glare-y, 30%),
+      rgb(255 255 255 / 0.2),
+      transparent 55%
+    );
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  .group[data-tilt]:hover .tilt-glare {
+    opacity: 1;
+  }
+}
+
+
+
 @media (prefers-reduced-motion: reduce) {
   .group:hover .zoom-media img,
   .group:focus-visible .zoom-media img {

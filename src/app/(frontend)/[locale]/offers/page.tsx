@@ -71,7 +71,7 @@ export default async function OffersPage({ params }: Props) {
           </Panel>
         ) : (
           <>
-            <ul className={cn('grid gap-6 md:gap-8', offers.length > 1 && 'md:grid-cols-2')}>
+            <ul data-stagger className={cn('grid gap-6 md:gap-8', offers.length > 1 && 'md:grid-cols-2')}>
               {offers.map((offer) => (
                 <li key={offer.id}>
                   <OfferPackageCard offer={offer} locale={locale} whatsapp={wa} full />

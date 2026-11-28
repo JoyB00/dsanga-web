@@ -206,3 +206,56 @@ test.describe('Contact form (F-14)', () => {
     await expect(page.getByRole('status')).toBeVisible()
   })
 })
+
+test.describe('Scroll animation (once per page visit)', () => {
+  const ANIMATED = 'main .reveal-children > *, main [data-stagger] > *'
+  const state = (page: import('@playwright/test').Page) =>
+    page.evaluate((sel) => {
+      const H = innerHeight
+      return [...document.querySelectorAll(sel)].map((el) => {
+        const r = el.getBoundingClientRect()
+        return {
+          onScreen: r.width > 0 && r.bottom > 0 && r.top < H,
+          below: r.width > 0 && r.top >= H,
+          opacity: Number(getComputedStyle(el).opacity),
+          running: el.getAnimations().filter((a) => a.playState === 'running').length,
+        }
+      })
+    }, ANIMATED)
+
+  test('content on screen at load is never hidden; content below rises in once', async ({ page }) => {
+    await page.goto(BASE + href('home', 'en'))
+    for (const s of await state(page)) if (s.onScreen) expect(s.opacity).toBe(1)
+    // The Motion chunk loads after the page is interactive and hides what is below the fold.
+    await expect.poll(async () => (await state(page)).some((s) => s.below && s.opacity === 0)).toBe(true)
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await expect
+      .poll(async () => (await state(page)).filter((s) => s.onScreen).every((s) => s.opacity === 1))
+      .toBe(true)
+  })
+
+  test('scrolling back up shows the content normally, without animation', async ({ page }) => {
+    await page.goto(BASE + href('home', 'en'))
+    await expect.poll(async () => (await state(page)).some((s) => s.below && s.opacity === 0)).toBe(true)
+    // Walk down so everything plays once, then jump back to the top.
+    const max = await page.evaluate(() => document.documentElement.scrollHeight)
+    for (let y = 0; y <= max; y += 500) {
+      await page.evaluate((top) => window.scrollTo(0, top), y)
+      await page.waitForTimeout(150)
+    }
+    await page.waitForTimeout(1500)
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.waitForTimeout(100)
+    for (const s of await state(page)) {
+      expect(s.opacity).toBe(1)
+      expect(s.running).toBe(0)
+    }
+  })
+
+  test('reduced motion: nothing is hidden or animated', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(BASE + href('home', 'en'))
+    await page.waitForTimeout(800)
+    for (const s of await state(page)) expect(s.opacity).toBe(1)
+  })
+})

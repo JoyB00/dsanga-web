@@ -25,9 +25,9 @@ export function CtaBand({
   children?: ReactNode
 }) {
   return (
-    <section className="on-dark relative isolate overflow-hidden bg-linear-to-br from-primary via-primary-hover to-foreground py-20 text-center md:py-28">
+    <section className="on-dark relative isolate overflow-clip bg-linear-to-br from-primary via-primary-hover to-foreground py-20 text-center md:py-28">
       {image && <PhotoBackdrop image={image} shade="bg-primary-hover/78" />}
-      <div className="container-content flex flex-col items-center gap-6">
+      <div className="container-content reveal-children flex flex-col items-center gap-6">
         {eyebrow && (
           <span className="text-[12px] font-bold tracking-[0.24em] text-accent-on-dark uppercase">
             {eyebrow}

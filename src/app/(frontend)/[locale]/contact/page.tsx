@@ -60,7 +60,7 @@ export default async function ContactPage({ params }: Props) {
       />
 
       <Section tone="cream">
-        <ul {...temp(settings)} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ul {...temp(settings)} data-stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {wa && (
             <li>
               <a

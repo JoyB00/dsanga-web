@@ -94,7 +94,7 @@ export default async function EventsPage({ params }: Props) {
             <p className="text-muted-foreground">{t.events.noUpcoming}</p>
           </Panel>
         ) : (
-          <ul className={cn('grid gap-6 sm:grid-cols-2', upcoming.length > 2 && 'lg:grid-cols-3')}>
+          <ul data-stagger className={cn('grid gap-6 sm:grid-cols-2', upcoming.length > 2 && 'lg:grid-cols-3')}>
             {upcoming.map((ev) => (
               <li
                 key={ev.id}
@@ -176,7 +176,7 @@ export default async function EventsPage({ params }: Props) {
             title={t.events.privateTitle}
             intro={t.events.privateText}
           />
-          <ul className="grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-5">
+          <ul data-stagger className="grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-5">
             {packages.map((pkg) => (
               <li key={pkg.id}>
                 <VenuePackageCard pkg={pkg} locale={locale} whatsapp={wa} full />
@@ -194,7 +194,7 @@ export default async function EventsPage({ params }: Props) {
             eyebrow={t.events.archiveEyebrow}
             title={t.events.archiveTitle}
           />
-          <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ul data-stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {past.map((ev) => (
               <li key={ev.id} {...temp(ev)} className="group flex flex-col gap-2">
                 <div className="zoom-media overflow-hidden rounded-card">

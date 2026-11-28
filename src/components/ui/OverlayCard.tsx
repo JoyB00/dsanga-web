@@ -41,6 +41,7 @@ export function OverlayCard({
     <Link
       {...marker}
       href={href}
+      data-tilt
       className={cn(
         'group relative block aspect-[4/3] overflow-hidden rounded-card bg-primary-hover text-white no-underline shadow-[0_8px_24px_rgb(31_42_36/0.12)] hover:text-white',
         wide ? 'lg:aspect-[16/9]' : 'sm:aspect-[4/5]',
@@ -53,6 +54,7 @@ export function OverlayCard({
         aria-hidden="true"
         className="absolute inset-0 bg-linear-to-b from-transparent from-25% via-[rgb(0_0_0/0.4)] via-60% to-[rgb(0_0_0/0.88)]"
       />
+      <span aria-hidden="true" className="tilt-glare" />
       {badge && <span className="badge-soon absolute top-4 left-4">{badge}</span>}
       <div className="absolute inset-x-0 bottom-0 flex items-end gap-4 p-5 md:p-6">
         <div className="flex min-w-0 flex-1 flex-col gap-2">

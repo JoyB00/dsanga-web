@@ -59,7 +59,8 @@ export default async function PrivacyPage({ params }: Props) {
             : undefined
         }
       />
-      <Section tone="cream">
+      {/* Long legal text with a sticky contents list: no scroll animation. */}
+      <Section tone="cream" reveal={false}>
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
           <nav
             aria-label={t.privacy.toc}

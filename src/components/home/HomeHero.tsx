@@ -96,7 +96,7 @@ export function HomeHero({
           />
         </div>
         <div aria-hidden="true" className="hero-shade absolute inset-0 -z-10" />
-        <div className="container-content flex flex-col items-start gap-4 pt-40 pb-24 md:gap-5 md:pb-40">
+        <div className="hero-intro container-content flex flex-col items-start gap-4 pt-40 pb-24 md:gap-5 md:pb-40">
           <Eyebrow dark>{home?.hero?.eyebrow || t.home.eyebrow}</Eyebrow>
           <h1 className="max-w-4xl text-[clamp(1.9rem,8.2vw,2.6rem)] leading-none text-white [text-shadow:0_2px_18px_rgb(0_0_0/0.35)] md:text-[64px] lg:text-[76px]">
             {titleMain}{' '}

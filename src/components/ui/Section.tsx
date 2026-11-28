@@ -82,7 +82,7 @@ const TONES: Record<Tone, string> = {
   white: 'bg-surface',
   alt: 'bg-surface-alt',
   soft: 'bg-linear-to-b from-surface to-background',
-  dark: 'on-dark relative isolate overflow-hidden bg-primary-hover text-white',
+  dark: 'on-dark relative isolate overflow-clip bg-primary-hover text-white',
 }
 
 /**
@@ -95,6 +95,7 @@ export function Section({
   label,
   image,
   className,
+  reveal = true,
   children,
   ...marker
 }: {
@@ -105,6 +106,8 @@ export function Section({
   /** Accessible name when the section has no visible heading. */
   label?: string
   className?: string
+  /** Each block rises in once when first scrolled to (src/components/MotionEffects.tsx). */
+  reveal?: boolean
   children: ReactNode
   /** F-15 staging marker, from temp(doc). */
   'data-unverified'?: ''
@@ -123,7 +126,11 @@ export function Section({
           className="absolute -top-40 -left-40 size-[480px] rounded-full bg-primary/70 blur-3xl"
         />
       )}
-      <div className="container-content relative flex flex-col gap-10">{children}</div>
+      <div
+        className={cn('container-content relative flex flex-col gap-10', reveal && 'reveal-children')}
+      >
+        {children}
+      </div>
     </section>
   )
 }

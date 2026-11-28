@@ -10,6 +10,8 @@ const PAGES = (Object.keys(routes) as RouteKey[]).flatMap((key) =>
 )
 
 test.describe('WCAG 2.1 AA (axe)', () => {
+  // Blocks entering at the bottom of the screen are mid fade-in by design; check the resting colours.
+  test.use({ reducedMotion: 'reduce' })
   for (const p of PAGES) {
     test(`${p.locale.toUpperCase()} ${p.key}`, async ({ page }) => {
       await page.goto(BASE + p.path)
